@@ -137,8 +137,9 @@ Optional helper API classes are provided in separate headers, typically located 
                   0000000000300800	0000000140310000	0000000000000200	Section(32)['.fptable']
                   0000000000300a00	0000000140311000	0000000000000c00	Section(33)['.reloc']
 `
-### **Demo**:
-    - [[Obfusk8: C++17-Based Obfuscation Library - IDA pro Graph View] ~Video Demo](https://youtu.be/B9g4KSg3tHQ)
+
+### Demo:
+   [[Obfusk8: C++17-Based Obfuscation Library - IDA pro Graph View] ~Video Demo](https://youtu.be/B9g4KSg3tHQ)
 
 **Usage**
 
