@@ -98,6 +98,7 @@ Optional helper API classes are provided in separate headers, typically located 
       ![image](https://github.com/user-attachments/assets/460889f8-49a7-4d6d-a226-442d4cece4db)
     
   * memory map (from die):
+    
     `
                   Offset	Address	Size	Name
                   0000000000000000	0000000140000000	0000000000000800	PE Header
