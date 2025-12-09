@@ -196,17 +196,23 @@ __forceinline uint32_t runtime_hash_w_aes(const wchar_t* str) {
                 if (!pLdr) return nullptr;
 
                 LIST_ENTRY* pHead = PtrAdd<LIST_ENTRY>((void*)pLdr, calc_offset_aes(OFF_LDR_LIST));
+                if (!pHead) return nullptr;
                 LIST_ENTRY* pCurr = pHead->Flink;
-
+                if (!pCurr) return nullptr;
+                
                 while (pCurr != pHead) {
                     uintptr_t entryBase = OBF_MBA_SUB((uintptr_t)pCurr, sizeof(LIST_ENTRY));
 
         #if defined(_WIN64)
+                    if (!entryBase) return nullptr;
                     uintptr_t dllBase = *PtrAdd<uintptr_t>((void*)entryBase, 0x30);
+                    if (!dllBase) return nullptr;
                     USHORT nameLen    = *PtrAdd<USHORT>((void*)entryBase, 0x58);
                     wchar_t* nameBuf  = *PtrAdd<wchar_t*>((void*)entryBase, 0x60);
         #else
+                    if (!entryBase) return nullptr;
                     uintptr_t dllBase = *PtrAdd<uintptr_t>((void*)entryBase, 0x18);
+                    if (!dllBase) return nullptr;
                     USHORT nameLen    = *PtrAdd<USHORT>((void*)entryBase, 0x2C);
                     wchar_t* nameBuf  = *PtrAdd<wchar_t*>((void*)entryBase, 0x30);
         #endif
@@ -235,9 +241,12 @@ __forceinline uint32_t runtime_hash_w_aes(const wchar_t* str) {
             __forceinline void* GetProcAddressH(HMODULE hMod, uint32_t funcHash) {
                 if (!hMod) return nullptr;
                 uintptr_t pBase = (uintptr_t)hMod;
+                if(!pBase)
+                    return nullptr;
                 int32_t e_lfanew = *PtrAdd<int32_t>((void*)pBase, calc_offset_aes(0x3C));
+                if(!e_lfanew) return nullptr;
                 uintptr_t pNtHeaders = OBF_MBA_ADD(pBase, (uintptr_t)e_lfanew);
-
+                if(!pNtHeaders) return nullptr;
         #if defined(_WIN64)
                 uint32_t expRva  = *PtrAdd<uint32_t>((void*)pNtHeaders, calc_offset_aes(0x88));
                 uint32_t expSize = *PtrAdd<uint32_t>((void*)pNtHeaders, calc_offset_aes(0x8C));
@@ -254,23 +263,38 @@ __forceinline uint32_t runtime_hash_w_aes(const wchar_t* str) {
                 uint32_t addrOfOrdinals = *PtrAdd<uint32_t>((void*)pExpDir, calc_offset_aes(0x24));
 
                 for (uint32_t i = 0; i < numberOfNames; ++i) {
+                    if(!addrOfNames)
+                        return nullptr;
                     uintptr_t nameRvaPtr = OBF_MBA_ADD(pBase, OBF_MBA_ADD((uintptr_t)addrOfNames, (uintptr_t)(i * 4)));
-                    uint32_t nameRva = *(uint32_t*)nameRvaPtr;
-                    const char* name = (const char*)OBF_MBA_ADD(pBase, (uintptr_t)nameRva);
-
-                    if (runtime_hash_aes(name) == funcHash) {
-                        uintptr_t ordPtr = OBF_MBA_ADD(pBase, OBF_MBA_ADD((uintptr_t)addrOfOrdinals, (uintptr_t)(i * 2)));
-                        uint16_t ordinal = *(uint16_t*)ordPtr;
-
-                        uintptr_t funcRvaPtr = OBF_MBA_ADD(pBase, OBF_MBA_ADD((uintptr_t)addrOfFunctions, (uintptr_t)(ordinal * 4)));
-                        uint32_t funcRva = *(uint32_t*)funcRvaPtr;
-
-                        uintptr_t funcAddr = OBF_MBA_ADD(pBase, (uintptr_t)funcRva);
-
-                        if (funcRva >= expRva && funcRva < OBF_MBA_ADD(expRva, expSize)) {
+                    if(nameRvaPtr)
+                    {
+                        uint32_t nameRva = *(uint32_t*)nameRvaPtr;
+                        if(!nameRva)
                             return nullptr;
+                        const char* name = (const char*)OBF_MBA_ADD(pBase, (uintptr_t)nameRva);
+                        if(!name)
+                            return nullptr;
+                        if (runtime_hash_aes(name) == funcHash) {
+                            uintptr_t ordPtr = OBF_MBA_ADD(pBase, OBF_MBA_ADD((uintptr_t)addrOfOrdinals, (uintptr_t)(i * 2)));
+                            if(ordPtr)
+                            {
+                                uint16_t ordinal = *(uint16_t*)ordPtr;
+                                if(!ordinal)
+                                    return nullptr;
+                                uintptr_t funcRvaPtr = OBF_MBA_ADD(pBase, OBF_MBA_ADD((uintptr_t)addrOfFunctions, (uintptr_t)(ordinal * 4)));
+                                if(funcRvaPtr)
+                                {
+                                    uint32_t funcRva = *(uint32_t*)funcRvaPtr;
+                                    uintptr_t funcAddr = OBF_MBA_ADD(pBase, (uintptr_t)funcRva);
+                                
+                                    if (funcRva >= expRva && funcRva < OBF_MBA_ADD(expRva, expSize)) {
+                                        return nullptr;
+                                    }
+                                    return (void*)funcAddr;
+                                } else 
+                                    return nullptr;
+                            }
                         }
-                        return (void*)funcAddr;
                     }
                 }
                 return nullptr;
@@ -278,3 +302,4 @@ __forceinline uint32_t runtime_hash_w_aes(const wchar_t* str) {
     }
 // ------------------------------------------------
 #pragma endregion RESOLVER
+
