@@ -20,11 +20,11 @@
 
     #include "Resolve8.hpp"
 
-    #define STEALTH_API_OBF(dll, api) \
-            find_export_byhash(find_module_base(CT_HASH(dll)), CT_HASH(api))
-
     #define STEALTH_API_OBFSTR(dll_lit, api_lit) \
-            STEALTH_API_OBF(OBFUSCATE_STRING(dll_lit).c_str(), OBFUSCATE_STRING(api_lit).c_str())
+            StealthResolver::GetProcAddressH( \
+                StealthResolver::GetModuleHandleH(runtime_hash_aes(OBFUSCATE_STRING(dll_lit).c_str())), \
+                runtime_hash_aes(OBFUSCATE_STRING(api_lit).c_str()) \
+            )
 
 // --------------------------------------
 #pragma endregion API_OBF
@@ -2405,3 +2405,4 @@
 // --------------------------------------
 
 #pragma endregion MAIN_FLATTENING
+
