@@ -20,7 +20,7 @@ NOOPT
     #pragma region API_OBF
     // --------------------------------------
     
-        #include "Resolve8.hpp"
+        #include "K8_UTILS/Resolve8.hpp"
     
         #define STEALTH_API_OBFSTR(dll_lit, api_lit) \
                 StealthResolver::GetProcAddressH( \
@@ -2408,3 +2408,4 @@ NOOPT
     
     #pragma endregion MAIN_FLATTENING
 OPT
+
