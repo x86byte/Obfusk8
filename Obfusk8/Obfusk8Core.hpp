@@ -1,5 +1,5 @@
 #pragma once
-#pragma optimize("Obfusk8 no opt", off)
+#pragma optimize("", off)
 
     #include <array>
     #include <string>
@@ -2407,4 +2407,4 @@
     
     #pragma endregion MAIN_FLATTENING
 
-#pragma optimize("Obfusk8 with opt", on)
+#pragma optimize("", on)
