@@ -1,5 +1,5 @@
 #pragma once
-#pragma optimize("Obfusk8 no opt", off)
+#pragma optimize("", off)
 
     #include <cstdint>
     #include <string>
@@ -392,4 +392,4 @@
     // ------------------------------------------------
     #pragma endregion Chunks
 
-#pragma optimize("Obfusk8 with opt", on)
+#pragma optimize("", on)
