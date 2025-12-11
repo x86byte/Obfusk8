@@ -30,7 +30,7 @@ A core component of the `_main` macro's obfuscation:
 *   **Handler Table Mutation**: The table of VM instruction handlers (`vm_handler_table`) is itself mutated at runtime within the `_main` prologue and epilogue, further obscuring the VM's behavior.
 
 ### 3. Compile-Time String Encryption (`OBFUSCATE_STRING` from `AES8.hpp`)
-*   **Hidden Strings**: Encrypts all string literals at compile-time using a modified XTEA cipher.
+*   **Hidden Strings**: Encrypts all string literals at compile-time using a modified AES cipher.
 *   **Dynamic Keys**: Encryption keys are unique per string instance, derived from string content, file location (`__FILE__`, `__LINE__`), and build time (`__DATE__`, `__TIME__`).
 *   **Just-In-Time Decryption**: Strings are decrypted on the stack only when accessed at runtime, minimizing their plaintext lifetime in memory.
 *   **(Optional) Decoy PE Sections**: Can store encrypted strings in custom PE sections designed to mimic common packer signatures, potentially misleading analysts (MSVC-specific feature from `AES8.hpp`).
