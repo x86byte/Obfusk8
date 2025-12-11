@@ -1,13 +1,14 @@
 #pragma once
-#pragma optimize("opt", off)
     
-    #include <windows.h>
-    #include <cstdint>
-    #include <string>
-    #include <cstdint>
-    #include <type_traits>
-    #include "AES8.hpp"
-    
+#include <windows.h>
+#include <cstdint>
+#include <string>
+#include <cstdint>
+#include <type_traits>
+#include "K8_UTILS/AES8.hpp"
+#include "K8_UTILS/k8_utils.hpp"
+
+NOOPT
     #ifdef _MSC_VER
     #define MBA_INLINE __forceinline
     #else
@@ -303,6 +304,4 @@
         }
     // ------------------------------------------------
     #pragma endregion RESOLVER
-
-#pragma optimize("Obfusk8 with opt", on)
-
+OPT
