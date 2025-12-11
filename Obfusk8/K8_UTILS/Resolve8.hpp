@@ -5,8 +5,8 @@
 #include <string>
 #include <cstdint>
 #include <type_traits>
-#include "K8_UTILS/AES8.hpp"
-#include "K8_UTILS/k8_utils.hpp"
+#include "AES8.hpp"
+#include "k8_utils.hpp"
 
 NOOPT
     #ifdef _MSC_VER
@@ -305,3 +305,4 @@ NOOPT
     // ------------------------------------------------
     #pragma endregion RESOLVER
 OPT
+
