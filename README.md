@@ -29,11 +29,11 @@ A core component of the `_main` macro's obfuscation:
     The `dispatch_key` is constantly mutated, making the sequence of executed handlers highly unpredictable.
 *   **Handler Table Mutation**: The table of VM instruction handlers (`vm_handler_table`) is itself mutated at runtime within the `_main` prologue and epilogue, further obscuring the VM's behavior.
 
-### 3. Compile-Time String Encryption (`OBFUSCATE_STRING` from `xtea8.hpp`)
+### 3. Compile-Time String Encryption (`OBFUSCATE_STRING` from `AES8.hpp`)
 *   **Hidden Strings**: Encrypts all string literals at compile-time using a modified XTEA cipher.
 *   **Dynamic Keys**: Encryption keys are unique per string instance, derived from string content, file location (`__FILE__`, `__LINE__`), and build time (`__DATE__`, `__TIME__`).
 *   **Just-In-Time Decryption**: Strings are decrypted on the stack only when accessed at runtime, minimizing their plaintext lifetime in memory.
-*   **(Optional) Decoy PE Sections**: Can store encrypted strings in custom PE sections designed to mimic common packer signatures, potentially misleading analysts (MSVC-specific feature from `xtea8.hpp`).
+*   **(Optional) Decoy PE Sections**: Can store encrypted strings in custom PE sections designed to mimic common packer signatures, potentially misleading analysts (MSVC-specific feature from `AES8.hpp`).
 
 ### 4. Stealthy Windows API Calling (`STEALTH_API_OBFSTR` / `STEALTH_API_OBF` from `Resolve8.hpp`)
 *   **IAT Obscurity**: Avoids leaving direct, easily identifiable entries for Windows APIs in the Import Address Table (IAT).
@@ -80,7 +80,7 @@ These are the building blocks used extensively throughout the library, especiall
 **Dependencies**
 The Obfusk8 library is modular. Core functionality relies on:
 - `Obfusk8Core.hpp`: (This file) The central header that orchestrates and provides the main obfuscation macros and primitives.
-- `xtea8.hpp`: Provides XTEA-based compile-time string encryption and optional PE section manipulation features.
+- `AES8.hpp`: Provides AES-based compile-time string encryption and optional PE section manipulation features.
 - `Resolve8.hpp`: Implements the PEB-based stealthy Windows API resolution.
 
 Optional helper API classes are provided in separate headers, typically located in subdirectories:
@@ -101,45 +101,9 @@ Optional helper API classes are provided in separate headers, typically located 
       ![image](https://github.com/user-attachments/assets/460889f8-49a7-4d6d-a226-442d4cece4db)
     
   *   **memory map (from die)**:
-    
-    `
-                  Offset	Address	Size	Name
-                  0000000000000000	0000000140000000	0000000000000800	PE Header
-                  0000000000000800	0000000140001000	000000000029b600	Section(0)['.text']
-                  000000000029be00	000000014029d000	000000000004a400	Section(1)['.rdata']
-                  00000000002e6200	00000001402e8000	0000000000001400	Section(2)['.data']
-                  00000000002e7600	00000001402ef000	0000000000004200	Section(3)['.pdata']
-                  00000000002eb800	00000001402f4000	0000000000000c00	Section(4)['.themida']
-                  00000000002ec400	00000001402f5000	0000000000000c00	Section(5)['.vmp1']
-                  00000000002ed000	00000001402f6000	0000000000000c00	Section(6)['.enigma2']
-                  00000000002edc00	00000001402f7000	0000000000000c00	Section(7)['.xtls']
-                  00000000002ee800	00000001402f8000	0000000000000c00	Section(8)['.arch']
-                  00000000002ef400	00000001402f9000	0000000000000c00	Section(9)['.vmp0']
-                  00000000002f0000	00000001402fa000	0000000000000c00	Section(10)['.xpdata']
-                  00000000002f0c00	00000001402fb000	0000000000000c00	Section(11)['.vmp2']
-                  00000000002f1800	00000001402fc000	0000000000000c00	Section(12)['.enigma1']
-                  00000000002f2400	00000001402fd000	0000000000000c00	Section(13)['.PECompa']
-                  00000000002f3000	00000001402fe000	0000000000000c00	Section(14)['.dsstext']
-                  00000000002f3c00	00000001402ff000	0000000000000c00	Section(15)['.UPX0']
-                  00000000002f4800	0000000140300000	0000000000000c00	Section(16)['.UPX1']
-                  00000000002f5400	0000000140301000	0000000000000c00	Section(17)['.UPX2']
-                  00000000002f6000	0000000140302000	0000000000000c00	Section(18)['.aspack']
-                  00000000002f6c00	0000000140303000	0000000000000c00	Section(19)['.nsp0']
-                  00000000002f7800	0000000140304000	0000000000000c00	Section(20)['.nsp1']
-                  00000000002f8400	0000000140305000	0000000000000c00	Section(21)['.FSG!']
-                  00000000002f9000	0000000140306000	0000000000000c00	Section(22)['.pec1']
-                  00000000002f9c00	0000000140307000	0000000000000c00	Section(23)['.pec2']
-                  00000000002fa800	0000000140308000	0000000000000c00	Section(24)['.petite']
-                  00000000002fb400	0000000140309000	0000000000000c00	Section(25)['.mpress1']
-                  00000000002fc000	000000014030a000	0000000000000c00	Section(26)['.mpress2']
-                  00000000002fcc00	000000014030b000	0000000000000c00	Section(27)['.vmp3']
-                  00000000002fd800	000000014030c000	0000000000000c00	Section(28)['.vmp4']
-                  00000000002fe400	000000014030d000	0000000000000c00	Section(29)['.vmp5']
-                  00000000002ff000	000000014030e000	0000000000000c00	Section(30)['.vmp6']
-                  00000000002ffc00	000000014030f000	0000000000000c00	Section(31)['.vmp7']
-                  0000000000300800	0000000140310000	0000000000000200	Section(32)['.fptable']
-                  0000000000300a00	0000000140311000	0000000000000c00	Section(33)['.reloc']
-`
+
+<pre> ```text Offset Address Size Name 0000000000000000 0000000140000000 0000000000000800 PE Header 0000000000000800 0000000140001000 000000000029b600 Section(0)['.text'] 000000000029be00 000000014029d000 000000000004a400 Section(1)['.rdata'] 00000000002e6200 00000001402e8000 0000000000001400 Section(2)['.data'] 00000000002e7600 00000001402ef000 0000000000004200 Section(3)['.pdata'] 00000000002eb800 00000001402f4000 0000000000000c00 Section(4)['.themida'] 00000000002ec400 00000001402f5000 0000000000000c00 Section(5)['.vmp1'] 00000000002ed000 00000001402f6000 0000000000000c00 Section(6)['.enigma2'] 00000000002edc00 00000001402f7000 0000000000000c00 Section(7)['.xtls'] 00000000002ee800 00000001402f8000 0000000000000c00 Section(8)['.arch'] 00000000002ef400 00000001402f9000 0000000000000c00 Section(9)['.vmp0'] 00000000002f0000 00000001402fa000 0000000000000c00 Section(10)['.xpdata'] 00000000002f0c00 00000001402fb000 0000000000000c00 Section(11)['.vmp2'] 00000000002f1800 00000001402fc000 0000000000000c00 Section(12)['.enigma1'] 00000000002f2400 00000001402fd000 0000000000000c00 Section(13)['.PECompa'] 00000000002f3000 00000001402fe000 0000000000000c00 Section(14)['.dsstext'] 00000000002f3c00 00000001402ff000 0000000000000c00 Section(15)['.UPX0'] 00000000002f4800 0000000140300000 0000000000000c00 Section(16)['.UPX1'] 00000000002f5400 0000000140301000 0000000000000c00 Section(17)['.UPX2'] 00000000002f6000 0000000140302000 0000000000000c00 Section(18)['.aspack'] 00000000002f6c00 0000000140303000 0000000000000c00 Section(19)['.nsp0'] 00000000002f7800 0000000140304000 0000000000000c00 Section(20)['.nsp1'] 00000000002f8400 0000000140305000 0000000000000c00 Section(21)['.FSG!'] 00000000002f9000 0000000140306000 0000000000000c00 Section(22)['.pec1'] 00000000002f9c00 0000000140307000 0000000000000c00 Section(23)['.pec2'] 00000000002fa800 0000000140308000 0000000000000c00 Section(24)['.petite'] 00000000002fb400 0000000140309000 0000000000000c00 Section(25)['.mpress1'] 00000000002fc000 000000014030a000 0000000000000c00 Section(26)['.mpress2'] 00000000002fcc00 000000014030b000 0000000000000c00 Section(27)['.vmp3'] 00000000002fd800 000000014030c000 0000000000000c00 Section(28)['.vmp4'] 00000000002fe400 000000014030d000 0000000000000c00 Section(29)['.vmp5'] 00000000002ff000 000000014030e000 0000000000000c00 Section(30)['.vmp6'] 00000000002ffc00 000000014030f000 0000000000000c00 Section(31)['.vmp7'] 0000000000300800 0000000140310000 0000000000000200 Section(32)['.fptable'] 0000000000300a00 0000000140311000 0000000000000c00 Section(33)['.reloc'] ``` </pre>
+
 
 ### Demo:
    [[Obfusk8: C++17-Based Obfuscation Library - IDA pro Graph View] ~Video Demo](https://youtu.be/B9g4KSg3tHQ)
@@ -172,7 +136,7 @@ Optional helper API classes are provided in separate headers, typically located 
         return 0;
     })
     ```
-3.  Use `OBFUSCATE_STRING("your string")` for all important string literals. Access the decrypted string via its `.c_str()` method if needed for API calls, or use its other methods like `.print_to_console()` if provided by `xtea8.hpp`.
+3.  Use `OBFUSCATE_STRING("your string")` for all important string literals. Access the decrypted string via its `.c_str()` method if needed for API calls, or use its other methods like `.print_to_console()` if provided by `AES8.hpp`.
 4.  Use `STEALTH_API_OBFSTR("dll_name.dll", "FunctionNameA")` for direct stealthy API calls, or preferably use the API wrapper classes (e.g., `K8_ProcessManipulationAPIs::ProcessAPI`, `k8_NetworkingAPIs::NetworkingAPI`) for convenience and built-in stealth.
 5.  Sprinkle `OBF_BOGUS_FLOW_*`, `OBF_CALL_ANY_LOCAL_JUNK`, `NOP()`, and other primitives in performance-insensitive critical sections of your code for added obfuscation layers.
 
@@ -187,7 +151,7 @@ Optional helper API classes are provided in separate headers, typically located 
     3.  **Use Developer Command Prompt**: After installation, search for "Developer Command Prompt for VS" (e.g., "x64 Native Tools Command Prompt for VS 2022") in your Start Menu and run it. This command prompt automatically sets up the environment variables (PATH, INCLUDE, LIB) needed to use `cl.exe`.
 *   **Include Paths**:
     *   Ensure the directory containing `Obfusk8Core.hpp` is in your compiler's include path.
-    *   If `xtea8.hpp`, `Resolve8.hpp`, and the API wrapper directories (e.g., `k8_NetworkingAPIs/`) are not in the same directory as `Obfusk8Core.hpp`, ensure their paths are also correctly configured. `Obfusk8Core.hpp` uses relative paths like `../Obfusk8Core.hpp` for some of its internal includes of the API wrappers, so the directory structure matters. If `Obfusk8Core.hpp` is at the root of your include directory for this library, then API wrappers should be in subdirectories like `k8_NetworkingAPIs/` relative to where `Obfusk8Core.hpp` expects them or adjust the include paths within `Obfusk8Core.hpp` itself.
+    *   If `AES8.hpp`, `Resolve8.hpp`, and the API wrapper directories (e.g., `k8_NetworkingAPIs/`) are not in the same directory as `Obfusk8Core.hpp`, ensure their paths are also correctly configured. `Obfusk8Core.hpp` uses relative paths like `../Obfusk8Core.hpp` for some of its internal includes of the API wrappers, so the directory structure matters. If `Obfusk8Core.hpp` is at the root of your include directory for this library, then API wrappers should be in subdirectories like `k8_NetworkingAPIs/` relative to where `Obfusk8Core.hpp` expects them or adjust the include paths within `Obfusk8Core.hpp` itself.
 *   **Compilation Example (using Developer Command Prompt)**:
     Assuming your `main.cpp` and the Obfusk8 headers are structured correctly, you can compile using a command similar to:
     ```bash
