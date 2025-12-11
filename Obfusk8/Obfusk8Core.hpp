@@ -1,17 +1,18 @@
 #pragma once
-#pragma optimize("", off)
 
-    #include <array>
-    #include <string>
-    #include <ctime>
-    #include <cstdint>
-    #include <random>
-    #include <type_traits>
-    
-    #pragma region AES 
+#include <array>
+#include <string>
+#include <ctime>
+#include <cstdint>
+#include <random>
+#include <type_traits>
+#include "K8_UTILS/k8_utils.hpp"
+
+NOOPT
+    #pragma region AES
     // --------------------------------------
     
-        #include "AES8.hpp"
+        #include "K8_UTILS/AES8.hpp"
     
     // --------------------------------------
     #pragma endregion AES
@@ -2406,5 +2407,4 @@
     // --------------------------------------
     
     #pragma endregion MAIN_FLATTENING
-
-#pragma optimize("", on)
+OPT
