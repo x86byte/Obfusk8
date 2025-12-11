@@ -1,5 +1,5 @@
 #pragma once
-#pragma optimize("Obfusk8 no opt", off)
+#pragma optimize("opt", off)
     
     #include <windows.h>
     #include <cstdint>
@@ -305,3 +305,4 @@
     #pragma endregion RESOLVER
 
 #pragma optimize("Obfusk8 with opt", on)
+
