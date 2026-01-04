@@ -100,7 +100,7 @@ DebugActiveProcessStop
 #include <cstdio>
 #include <string>
 
-#include "../Obfusk8Core.hpp"
+#include "../Instrumentation/materialization/state/Obfusk8Core.hpp"
 
 // i got this from : https://ntdoc.m417z.com/processinfoclass
 typedef enum _PROCESSINFOCLASS
@@ -303,3 +303,4 @@ namespace K8_ProcessManipulationAPIs
         }
     };
 }
+
