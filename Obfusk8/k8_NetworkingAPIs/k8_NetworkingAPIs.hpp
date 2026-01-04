@@ -2,7 +2,7 @@
 
 #include <windows.h>
 #include <wininet.h>
-#include "../Obfusk8Core.hpp"
+#include "../Instrumentation/materialization/state/Obfusk8Core.hpp"
 
 namespace k8_NetworkingAPIs
 {
@@ -131,4 +131,5 @@ namespace k8_NetworkingAPIs
                 }
             }
     };
+
 }
