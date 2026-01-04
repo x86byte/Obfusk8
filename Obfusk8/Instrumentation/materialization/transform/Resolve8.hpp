@@ -2,14 +2,9 @@
 
 #include "AES8.hpp"
 #include "K8_UTILS/k8_utils.hpp"
+#include "getpeb8.hpp"
 
 NOOPT
-    #ifdef _MSC_VER
-    #define MBA_INLINE __forceinline
-    #else
-    #define MBA_INLINE inline __attribute__((always_inline))
-    #endif
-    
     #pragma region MBA_OFF
     // ------------------------------------------------
         template<typename T>
@@ -177,14 +172,8 @@ NOOPT
                 }
     
                 __forceinline uintptr_t GetPEB() {
-                    uintptr_t off = calc_offset_aes(OFF_TEB_PEB);
-            #if defined(_WIN64)
-                    return (uintptr_t)__readgsqword(off);
-            #else
-                    return (uintptr_t)__readfsdword(off);
-            #endif
+                    return (GetPEB_ViaSyscall());
                 }
-    
                 __forceinline HMODULE GetModuleHandleH(uint32_t modHash) {
                     uintptr_t pPeb = GetPEB();
                     if (!pPeb) return nullptr;
