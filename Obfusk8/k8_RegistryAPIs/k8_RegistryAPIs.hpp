@@ -2,7 +2,7 @@
 
 #include <windows.h>
 #include <iostream>
-#include "../Obfusk8Core.hpp"
+#include "../Instrumentation/materialization/state/Obfusk8Core.hpp"
 #include <cstdio>
 
 namespace RegistryAPIs 
@@ -94,5 +94,6 @@ namespace RegistryAPIs
 		        }
 		    }
 	};
+
 
 }
