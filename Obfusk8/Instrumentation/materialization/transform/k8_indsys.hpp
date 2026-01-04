@@ -7,13 +7,6 @@
 NOOPT
     namespace idrct_sys
     {
-        struct SyscallEntry
-        {
-            uint32_t hash;
-            uintptr_t address;
-            uint32_t ssn;
-        };
-
         static std::vector<SyscallEntry> _g_syscall_map;
         static bool _g_is_initialized = false;
 
