@@ -2,7 +2,7 @@
 
 #include <windows.h>
 #include <wincrypt.h>
-#include "../Obfusk8Core.hpp"
+#include "../Instrumentation/materialization/state/Obfusk8Core.hpp"
 #include <cstdio>
 
 namespace k8_CryptographyAPIs 
@@ -154,4 +154,5 @@ namespace k8_CryptographyAPIs
                     }
                 }
     };
+
 }
