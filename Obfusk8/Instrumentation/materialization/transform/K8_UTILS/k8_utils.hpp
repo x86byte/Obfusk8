@@ -20,6 +20,28 @@
 // ------------------------------------------------
 #pragma endregion _OPT
 
+#pragma region DEFINES
+// ------------------------------------------------
+    #ifndef K8_FORCEINLINE
+    #define K8_FORCEINLINE __forceinline
+    #endif
+
+    #ifdef _MSC_VER
+    #define MBA_INLINE __forceinline
+    #else
+    #define MBA_INLINE inline __attribute__((always_inline))
+    #endif
+
+    constexpr uint32_t _BSTRAP_IV = 0x5AD009999;
+// ------------------------------------------------
+#pragma endregion DEFINES
+
+#pragma region HELPERS_
+// ------------------------------------------------
+    K8_FORCEINLINE uint32_t _bstrap_hash(const char* str);
+// ------------------------------------------------
+#pragma endregion HELPERS_
+
 #pragma region NT_STRUCTURES
 // ------------------------------------------------
     typedef struct _UNICODE_STRING_K8 {
@@ -70,14 +92,22 @@
         PPEB_LDR_DATA_K8 Ldr;
     } PEB_K8, *PPEB_K8;
 
-    __forceinline PPEB_K8 GetPEB()
+    typedef struct _PROCESS_BASIC_INFORMATION_K8 {
+        NTSTATUS ExitStatus;
+        void* PebBaseAddress;
+        ULONG_PTR AffinityMask;
+        LONG BasePriority;
+        ULONG_PTR UniqueProcessId;
+        ULONG_PTR InheritedFromUniqueProcessId;
+    } PROCESS_BASIC_INFORMATION_K8;
+
+    // not nt but let it happen
+    struct SyscallEntry
     {
-        #if defined(_WIN64)
-            return (PPEB_K8)__readgsqword(0x60);
-        #else
-            return (PPEB_K8)__readfsdword(0x30);
-        #endif
-    }
+        uint32_t hash;
+        uintptr_t address;
+        uint32_t ssn;
+    };
 // ------------------------------------------------
 #pragma endregion NT_STRUCTURES
 
