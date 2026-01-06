@@ -291,8 +291,6 @@ _main({
           } else {
               cout << OBFUSCATE_STRING("-> [SYSCALL - INFO] FAILED: ZwOpenProcess status: 0x").c_str() << hex << status << endl;
           }
-
-          return 0;
     })
 #endif
 
@@ -307,6 +305,7 @@ to Obfuscte ur apis use :
 to Obfuscate STRINGS use :
     OBFUSCATE_STRING
 */
+
 
 
 
