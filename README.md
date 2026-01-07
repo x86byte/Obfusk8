@@ -40,7 +40,14 @@ A core component of the `_main` macro's obfuscation:
 *   **PEB-Based Resolution**: Dynamically finds base addresses of loaded DLLs and the addresses of API functions by directly parsing Process Environment Block (PEB) data structures at runtime. This bypasses standard `GetModuleHandle` and `GetProcAddress` for initial resolution if those themselves are not yet resolved by this mechanism.
 *   **Hashed Names**: Uses compile-time hashing (custom algorithm `CT_HASH`) of DLL and API names for lookups. This prevents plaintext DLL and API names from appearing in the binary's import-related data or string tables when using these macros.
 
-### 5. API Abstraction Classes with Built-in Stealth
+### 5. Advanced Indirect Syscall Engine (`K8_SYSCALL`) [NEW]
+Obfusk8 now integrates a state-of-the-art Indirect Syscall mechanism to bypass User-Mode Hooks (EDRs/AVs) and static analysis checks.
+*   **"The Sorting Hat" Resolution**: Instead of reading the .text section of ntdll.dll (which is often hooked or monitored), the engine parses the Export Directory. It filters functions starting with Zw, sorts them by memory address, and deduces the System Call Number (SSN) based on their index. This allows SSN resolution without ever touching executable code.
+*   **Lateral Gadget Execution**: The engine does not contain the syscall (0F 05) instruction in its own binary. Instead, it locates a valid syscall; ret gadget inside ntdll.dll memory at runtime.
+Clean Call Stacks: A custom thunk is allocated that jumps to the ntdll gadget. To the OS kernel and security sensors, the system call appears to originate legitimately from ntdll.dll, maintaining a clean call stack.
+*   **Usage**: Simply use `K8_SYSCALL("ZwOpenProcess", ...)` instead of NtOpenProcess.
+   
+### 6. API Abstraction Classes with Built-in Stealth
 Obfusk8 provides helper classes that encapsulate common sets of Windows APIs. These classes automatically use the stealthy API resolution mechanism (`STEALTH_API_OBFSTR`) during their construction, ensuring that the underlying Windows functions are resolved without leaving obvious static import traces.
 
    - **`K8_ProcessManipulationAPIs::ProcessAPI` (`k8_ProcessManipulationAPIs.hpp`)**:
@@ -63,7 +70,7 @@ Obfusk8 provides helper classes that encapsulate common sets of Windows APIs. Th
      *   **Automatic Stealth Resolution**: Resolves functions from `advapi32.dll` (and `kernel32.dll`) stealthily during construction.
      *   Aids in performing registry operations with less traceable API calls.
 
-### 6. Core Obfuscation Primitives (Macros in `Obfusk8Core.hpp`)
+### 7. Core Obfuscation Primitives (Macros in `Obfusk8Core.hpp`)
 These are the building blocks used extensively throughout the library, especially in the `_main` macro and VM engine:
 *   **Mixed Boolean-Arithmetic (MBA)**: Transforms simple mathematical and logical operations (ADD, SUB, XOR, NOT, MUL) into complex, but equivalent, sequences of bitwise and arithmetic formulas (e.g., `OBF_MBA_ADD`, `OBF_MBA_XOR`). These are designed to be very difficult for decompilers to simplify back to their original forms.
 *   **Opaque Predicates**: Inserts conditional branches where the condition always evaluates to true (e.g., `OBF_OPAQUE_PREDICATE_TRUE_1`) or always false (e.g., `OBF_OPAQUE_PREDICATE_FALSE_1`). These conditions are constructed from complex, hard-to-statically-evaluate expressions involving `__COUNTER__`, `__LINE__`, `__TIME__`, and the `_obf_global_opaque_seed`. They create misleading code paths and can be used to guard dead code or force specific execution flows.
