@@ -139,8 +139,6 @@ Optional helper API classes are provided in separate headers, typically located 
         }
 
         delete netAPI;
-        
-        return 0;
     })
     ```
 3.  Use `OBFUSCATE_STRING("your string")` for all important string literals. Access the decrypted string via its `.c_str()` method if needed for API calls, or use its other methods like `.print_to_console()` if provided by `AES8.hpp`.
