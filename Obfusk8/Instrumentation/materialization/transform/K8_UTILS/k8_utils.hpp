@@ -3,6 +3,17 @@
 #ifndef OBFUSK8_K8_UTILS_HPP
 #define OBFUSK8_K8_UTILS_HPP
 
+#ifdef __clang__
+    #pragma clang diagnostic ignored "-Wunknown-pragmas"
+    #pragma clang diagnostic ignored "-Wmicrosoft-template"
+    #pragma clang diagnostic ignored "-Winvalid-source-encoding"
+    #pragma clang diagnostic ignored "-Wshift-count-overflow"
+    #pragma clang diagnostic ignored "-Wshift-op-parentheses"
+    #pragma clang diagnostic ignored "-Wparentheses"
+    #pragma clang diagnostic ignored "-Wunused-value"
+    #pragma clang diagnostic ignored "-Wunused-variable"
+#endif
+
 #include <windows.h>
 #include <string>
 #include <type_traits>
@@ -112,3 +123,4 @@
 #pragma endregion NT_STRUCTURES
 
 #endif
+
