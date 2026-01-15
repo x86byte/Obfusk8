@@ -13,7 +13,7 @@ NOOPT
     // --------------------------------------
     
         #include "../transform/AES8.hpp"
-    
+
     // --------------------------------------
     #pragma endregion AES
     
@@ -256,7 +256,7 @@ NOOPT
         #ifndef _obf_global_opaque_seed
         extern volatile int _obf_global_opaque_seed;
         #endif
-    
+        // need more dev...
         #define OBF_JUNK_BODY_1 \
             volatile int x_jb = __COUNTER__ + 11 + _obf_global_opaque_seed; \
             x_jb ^= (0xDEADBEEFU + (int)__TIME__[0]); \
@@ -1178,7 +1178,7 @@ NOOPT
     
     
         #define OBF_FAKE_PROLOGUE_MANIP() \
-            do { \
+            do {\
                 volatile std::uintptr_t _fake_ebp = (std::uintptr_t)&_obf_global_opaque_seed - (OBF_CALL_ANY_LOCAL_JUNK() & 0xFF); \
                 volatile std::uintptr_t _fake_esp = _fake_ebp - ((OBF_CALL_ANY_LOCAL_JUNK() & 0x7F) + 16); \
                 _obf_global_opaque_seed = OBF_MBA_XOR(_obf_global_opaque_seed, (int)_fake_ebp ^ (int)_fake_esp); \
@@ -1768,7 +1768,6 @@ NOOPT
     
                 using namespace obf_icff_ns_dcff;
     
-    
                 namespace obf_icff_ns_epd {
                         enum class _ObfICFF_BlockId_EPD : unsigned int {
                             BLOCK_INIT_SELECTOR,
@@ -1855,7 +1854,7 @@ NOOPT
                     _rt_decision_val = OBF_MBA_ADD(_rt_decision_val, OBF_CALL_ANY_LOCAL_JUNK()); \
                     CALLER();\
                     \
-                    if (OBF_OPAQUE_PREDICATE_TRUE_1()) { \
+                    if (OBF_OPAQUE_PREDICATE_TRUE_1() || !OBF_OPAQUE_PREDICATE_TRUE_1()) { \
                         CALLER();\
                     } else { K8_ASSUME(0); CALLER(); } \
                     \
@@ -1863,10 +1862,10 @@ NOOPT
                     unsigned int _rt_crash_cond_part2 = OBF_MBA_NOT((unsigned int)_obf_global_opaque_seed + (vm_state_ref).pc); \
                     \
                     if ( (_rt_crash_cond_part1 & 0xFEFEFEFEU) == OBF_MBA_XOR(0x41414141U & 0xFEFEFEFEU, _rt_crash_cond_part2 & 0x01010101U) && \
-                         OBF_OPAQUE_PREDICATE_TRUE_2(_rt_decision_val ^ (vm_state_ref).r0) ) \
+                         OBF_OPAQUE_PREDICATE_TRUE_2(_rt_decision_val ^ (vm_state_ref).r0) || !OBF_OPAQUE_PREDICATE_TRUE_2(_rt_decision_val ^ (vm_state_ref).r0)) \
                     { \
                         OBF_CALL_ANY_LOCAL_JUNK(); \
-                        if ((_rt_decision_val & 0x180) && (std::rand() & 1) && OBF_OPAQUE_PREDICATE_TRUE_1()) { \
+                        if ((_rt_decision_val & 0x180) && (std::rand() & 1) && OBF_OPAQUE_PREDICATE_TRUE_1() || !OBF_OPAQUE_PREDICATE_TRUE_1()) { \
                             if (((unsigned int)_obf_global_opaque_seed ^ __LINE__) % 3 == 0) { \
                                 obf_vm_engine::_seh_forced_exception_effect(vm_state_ref); \
                             } else { \
@@ -1874,7 +1873,7 @@ NOOPT
                             } \
                         } \
                         unsigned int _rt_err_seed = (unsigned int)_obf_global_opaque_seed ^ (unsigned int)__TIME__[0] ^ (unsigned int)__COUNTER__; \
-                        auto llll = (_rt_err_seed >> 8) & 0xFF + _rt_err_seed & 0xFF ^ (vm_state_ref).r0 << 0xFFFF + OBF_CALL_ANY_LOCAL_JUNK() % 10;\
+                        auto llll = (((_rt_err_seed >> 8) & 0xFF) + (_rt_err_seed & 0xFF)) ^ (((vm_state_ref).r0 << 5) + (OBF_CALL_ANY_LOCAL_JUNK() % 10));\
                         throw std::runtime_error(OBFUSCATE_STRING("pojkdkddkeifpojkdkddkeifpojkdkddkeifpojkdkddkeif Oh skibiddi oooh")); \
                         if (((unsigned int)_obf_global_opaque_seed ^ __COUNTER__ << llll) % 3 == 0) { \
                             CALLER(); \
@@ -1905,20 +1904,24 @@ NOOPT
                     _htm_base_val2 = OBF_MBA_XOR(_htm_base_val2, (vm_state_ref).r1 ^ (vm_state_ref).pc); \
                     size_t _htm_idx2 = _htm_base_val2 % (sz); \
                     \
-                    if (OBF_OPAQUE_PREDICATE_TRUE_1() && _htm_idx1 != _htm_idx2) { \
+                    if (OBF_OPAQUE_PREDICATE_TRUE_1() || !OBF_OPAQUE_PREDICATE_TRUE_1() && _htm_idx1 != _htm_idx2) { \
                         auto _htm_temp_ptr = (table)[_htm_idx1]; \
                         (table)[_htm_idx1] = (table)[_htm_idx2]; \
                         (table)[_htm_idx2] = _htm_temp_ptr; \
                         _obf_global_opaque_seed = OBF_MBA_ADD(_obf_global_opaque_seed, (int)(_htm_idx1 ^ _htm_idx2)); \
-                    } else if (OBF_OPAQUE_PREDICATE_TRUE_2(_htm_base_val1)) { \
-                        unsigned int _htm_base_val3 = OBF_MBA_XOR((unsigned int)_obf_global_opaque_seed, (unsigned int)OBF_CALL_ANY_LOCAL_JUNK() ^ (vm_state_ref).r2); \
-                        size_t _htm_idx3 = (_htm_base_val3 ^ _htm_idx1) % (sz); \
-                        if (_htm_idx1 != _htm_idx3) { \
-                            auto _htm_extra_temp_ptr = (table)[_htm_idx1]; \
-                            (table)[_htm_idx1] = (table)[_htm_idx3]; \
-                            (table)[_htm_idx3] = _htm_extra_temp_ptr; \
-                             _obf_global_opaque_seed = OBF_MBA_XOR(_obf_global_opaque_seed, (int)(_htm_idx1 ^ _htm_idx3) + 1); \
-                        } \
+                    } else if (1 == 1) { \
+                        unsigned int lo = _htm_base_val1;\
+                        if(OBF_OPAQUE_PREDICATE_TRUE_2(_htm_base_val1) || !OBF_OPAQUE_PREDICATE_TRUE_2(lo))\
+                        {\
+                            unsigned int _htm_base_val3 = OBF_MBA_XOR((unsigned int)_obf_global_opaque_seed, (unsigned int)OBF_CALL_ANY_LOCAL_JUNK() ^ (vm_state_ref).r2); \
+                                size_t _htm_idx3 = (_htm_base_val3 ^ _htm_idx1) % (sz); \
+                                if (_htm_idx1 != _htm_idx3) {\
+                                        auto _htm_extra_temp_ptr = (table)[_htm_idx1]; \
+                                        (table)[_htm_idx1] = (table)[_htm_idx3]; \
+                                        (table)[_htm_idx3] = _htm_extra_temp_ptr; \
+                                        _obf_global_opaque_seed = OBF_MBA_XOR(_obf_global_opaque_seed, (int)(_htm_idx1 ^ _htm_idx3) + 1); \
+                                } \
+                        }\
                     } \
                     \
                     if (((unsigned int)_obf_global_opaque_seed ^ _htm_i) % 5 == 2) { \
@@ -1927,18 +1930,18 @@ NOOPT
                     } \
                     if (OBF_OPAQUE_PREDICATE_FALSE_1()) { K8_ASSUME(0); break; }\
                     \
-                    if (((_htm_idx1 + _htm_idx2) % 3) == 0 && OBF_OPAQUE_PREDICATE_TRUE_1()) { \
+                    if (((_htm_idx1 + _htm_idx2) % 3) == 0 && OBF_OPAQUE_PREDICATE_TRUE_1()  || !OBF_OPAQUE_PREDICATE_TRUE_1()) { \
                         (vm_state_ref).r0 = OBF_MBA_XOR((vm_state_ref).r0, _htm_base_val1); \
                         (vm_state_ref).dispatch_key = OBF_MBA_ADD((vm_state_ref).dispatch_key, _htm_base_val2 ^ (unsigned int)_obf_global_opaque_seed); \
                     } \
                 } \
                 OBF_CALL_ANY_LOCAL_JUNK(); \
             } while (0)
-    
-        #define _main(main_body) \
+
+    #define _main(main_body) \
             int main(int argc = 0, char** argv = nullptr) { \
                 OBF_BOGUS_FLOW_CYCLONE();\
-                if (OBF_OPAQUE_PREDICATE_TRUE_1()) { OBF_BOGUS_FLOW_LABYRINTH(); }\
+                if (OBF_OPAQUE_PREDICATE_TRUE_1()  || !OBF_OPAQUE_PREDICATE_TRUE_1()) { OBF_BOGUS_FLOW_LABYRINTH(); }\
                 OBF_BOGUS_FLOW_SCRAMBLE();\
                 volatile unsigned int _d_seed = OBF_MBA_ADD((int)std::time(nullptr) ^ argc ^ (int)(__LINE__), _obf_global_opaque_seed ^ __COUNTER__); \
                 _obf_global_opaque_seed = _d_seed; \
@@ -1947,7 +1950,6 @@ NOOPT
                 OBF_STACK_AND_PROLOGUE_JUNK(_prologue_stack_junk_var2, 69 + (OBF_CALL_ANY_LOCAL_JUNK() & 68)); \
                 OBF_STACK_AND_PROLOGUE_JUNK(_prologue_stack_junk_var3, 34 + (OBF_CALL_ANY_LOCAL_JUNK() & 44)); \
                 OBF_STACK_AND_PROLOGUE_JUNK(_prologue_stack_junk_var4, 64 + (OBF_CALL_ANY_LOCAL_JUNK() & 32)); \
-                OBF_STACK_AND_PROLOGUE_JUNK(_prologue_stack_junk_var5, 98 + (OBF_CALL_ANY_LOCAL_JUNK() & 99)); \
                 obf_vm_engine::VMState vm_s(_obf_global_opaque_seed); \
                 constexpr size_t VM_BYTECODE_LEN = 30; \
                 std::array<unsigned int, VM_BYTECODE_LEN> _obf_vm_bytecode; \
@@ -1957,11 +1959,13 @@ NOOPT
                 vm_s.dispatch_key = (argc > 0 && argv != nullptr && argv[0] != nullptr) ? \
                                     OBF_MBA_ADD((unsigned int)argv[0][0], (unsigned int)((std::string(argv[0]).length() > 1 ? argv[0][1] : (char)__COUNTER__) ^ __COUNTER__)) : \
                                     (unsigned int)__COUNTER__; \
+                OBF_FAKE_PROLOGUE_MANIP(); \
                 vm_s.dispatch_key = (vm_s.dispatch_key == 0) ? (1u + (unsigned int)__TIME__[3]) : vm_s.dispatch_key; \
                 vm_s.pc = ((unsigned int)__TIME__[4] ^ (unsigned int)_obf_global_opaque_seed) % VM_BYTECODE_LEN; \
-                OBF_CHAINED_OBF_CALLS(vm_s, argc + 1); \
+                OBF_CHAINED_OBF_CALLS(vm_s, argc + 1);\
                 volatile int _main_exit_choice = 0; \
                 OBF_CONDITIONAL_EXIT(_main_exit_choice, 0, 1); \
+                OBF_FAKE_PROLOGUE_MANIP(); \
                 OBF_EXIT_CHOICE_DRIVES_CALL(vm_s, (int)(vm_s.pc % 10), _main_exit_choice, 0); \
                 OBF_HEAVY_JUNK_OP(vm_s.r0, vm_s.r1 ^ (unsigned int)__LINE__); \
                 obf_vm_engine::_seh_wrapped_vm_register_modification(vm_s, __LINE__ ^ (unsigned int)OBF_CALL_ANY_LOCAL_JUNK()); \
@@ -1972,53 +1976,68 @@ NOOPT
                     unsigned int encryption_key = OBF_MBA_ADD(0xDEADBEEFU, (i_bc * 0x101U) ^ (unsigned int)__LINE__); \
                     _obf_vm_bytecode[i_bc] = OBF_MBA_XOR(bc_val, encryption_key); \
                 } \
+                OBF_FAKE_PROLOGUE_MANIP(); \
                 HANDLER_TABLE_MUTATE(obf_vm_engine::vm_handler_table, obf_vm_engine::VM_HANDLER_TABLE_SIZE, vm_s);\
+                volatile unsigned int _vm_cipher_seed = 0x378829 ^ (unsigned int)__TIME__[5]; \
+                for (size_t i_bc = 0; i_bc < VM_BYTECODE_LEN; ++i_bc) {\
+                    if ((i_bc % 5) == 0) { OBF_STACK_AND_ACCESS(32, i_bc % 32, (char)(i_bc ^ _obf_global_opaque_seed)); } \
+                        unsigned int bc_val = ((i_bc * (17U + (unsigned int)__TIME__[5])) + __COUNTER__ + (unsigned int)_obf_global_opaque_seed); \
+                        bc_val = OBF_MBA_XOR(bc_val, (unsigned int)__TIME__[i_bc % 8]); \
+                        unsigned int encryption_key = OBF_MBA_ADD(0xDEADBEEFU, (i_bc * 0x101U) ^ _vm_cipher_seed); \
+                        _obf_vm_bytecode[i_bc] = OBF_MBA_XOR(bc_val, encryption_key); \
+                } \
+                HANDLER_TABLE_MUTATE(obf_vm_engine::vm_handler_table, obf_vm_engine::VM_HANDLER_TABLE_SIZE, vm_s); \
                 int prologue_loop_iterations = (int)VM_BYTECODE_LEN + (((unsigned int)_obf_global_opaque_seed ^ vm_s.dispatch_key) % 7) + 5; \
-                for (int iter_vm = 0; iter_vm < prologue_loop_iterations; ++iter_vm) { \
-                    NOP(); \
-                    if ((iter_vm % 3) == 0) { OBF_FAKE_PROLOGUE_MANIP(); } \
-                    if ((iter_vm % 7) == 2) { \
-                         obf_vm_engine::_seh_forced_exception_effect(vm_s); \
-                    } \
+                OBF_FAKE_PROLOGUE_MANIP(); \
+                for (int iter_vm = 0; iter_vm < prologue_loop_iterations; ++iter_vm) {\
+                    NOP();\
                     CALLER();\
                     unsigned int current_raw_bytecode = _obf_vm_bytecode[vm_s.pc % VM_BYTECODE_LEN]; \
-                    unsigned int decryption_key = OBF_MBA_ADD(0xDEADBEEFU, ((vm_s.pc % VM_BYTECODE_LEN) * 0x101U) ^ (unsigned int)__LINE__); \
+                    unsigned int decryption_key = OBF_MBA_ADD(0xDEADBEEFU, ((vm_s.pc % VM_BYTECODE_LEN) * 0x101U) ^ _vm_cipher_seed); \
                     unsigned int handler_index = OBF_MBA_XOR(current_raw_bytecode, decryption_key) % obf_vm_engine::VM_HANDLER_TABLE_SIZE; \
-                    if (OBF_OPAQUE_PREDICATE_TRUE_1()) { \
-                        vm_s.dispatch_key = OBF_MBA_XOR(vm_s.dispatch_key, vm_s.r0 + vm_s.r1 + (unsigned int)iter_vm + (unsigned int)__TIME__[(iter_vm+1)%8]); \
-                        vm_s.dispatch_key = OBF_MBA_ADD(vm_s.dispatch_key, (vm_s.dispatch_key << ((iter_vm%3)+1)) | (vm_s.dispatch_key >> (32-((iter_vm%3)+1)))); \
-                    } else { K8_ASSUME(0); \
-                        vm_s.dispatch_key = OBF_MBA_SUB(vm_s.dispatch_key, 0xDEADDEADU); \
+                    if (OBF_OPAQUE_PREDICATE_TRUE_1() || !OBF_OPAQUE_PREDICATE_TRUE_1()) {\
+                            vm_s.dispatch_key = OBF_MBA_XOR(vm_s.dispatch_key, vm_s.r0 + vm_s.r1 + (unsigned int)iter_vm + (unsigned int)__TIME__[(iter_vm + 1) % 8]); \
+                            vm_s.dispatch_key = OBF_MBA_ADD(vm_s.dispatch_key, (vm_s.dispatch_key << ((iter_vm % 3) + 1)) | (vm_s.dispatch_key >> (32 - ((iter_vm % 3) + 1)))); \
+                    }\
+                    else {\
+                        K8_ASSUME(0); \
+                            vm_s.dispatch_key = OBF_MBA_SUB(vm_s.dispatch_key, 0xDEADDEADU); \
                     } \
-                    vm_s.dispatch_key = (vm_s.dispatch_key == 0) ? ((unsigned int)iter_vm + 1u + (unsigned int)__COUNTER__): vm_s.dispatch_key; \
+                    vm_s.dispatch_key = (vm_s.dispatch_key == 0) ? ((unsigned int)iter_vm + 1u + (unsigned int)__COUNTER__) : vm_s.dispatch_key; \
                     obf_vm_engine::vm_handler_table[handler_index](vm_s, argc, argv); \
                     unsigned int pc_increment = (vm_s.r0 & 0x3U) + 1U; \
-                    if (OBF_OPAQUE_PREDICATE_TRUE_2(vm_s.r1 ^ vm_s.dispatch_key)) { \
+                    if (OBF_OPAQUE_PREDICATE_TRUE_2(vm_s.r1 ^ vm_s.dispatch_key)) {\
                         vm_s.pc = OBF_MBA_ADD(vm_s.pc, pc_increment); \
-                    } else { K8_ASSUME(0); \
+                    }\
+                    else {\
+                        K8_ASSUME(0); \
                         vm_s.pc = OBF_MBA_SUB(vm_s.pc, (vm_s.r2 & 0x1U) + 1U); \
                     } \
+                    OBF_FAKE_PROLOGUE_MANIP(); \
                     vm_s.pc %= VM_BYTECODE_LEN; \
                     NOP(); \
                     if (iter_vm > 10 && OBF_OPAQUE_PREDICATE_FALSE_2(vm_s.r0 ^ vm_s.r1 ^ vm_s.r2)) { K8_ASSUME(0); break; } \
-                } \
-                \
-                int dsptch_steps = 5 + (((unsigned int)_obf_global_opaque_seed ^ vm_s.pc) % 5);\
-                vm_s.pc %= obf_vm_engine::HANDLER_COUNT; \
-                obf_vm_engine::dsptch(vm_s, argc, argv, (unsigned int)dsptch_steps); \
-                vm_s.pc %= VM_BYTECODE_LEN; \
-                \
-                volatile unsigned int _obf_direct_cff_seed = OBF_MBA_XOR(vm_s.r0, vm_s.dispatch_key ^ (unsigned int)__LINE__ ^ (unsigned int)__TIME__[6]); \
-                int direct_cff_loops = (((_obf_direct_cff_seed + (unsigned int)argc) % 4) + 5); \
-                for (int i_dcff = 0; i_dcff < direct_cff_loops; ++i_dcff) { \
+                    } \
+                    \
+                    int dsptch_steps = 5 + (((unsigned int)_obf_global_opaque_seed ^ vm_s.pc) % 5);\
+                    vm_s.pc %= obf_vm_engine::HANDLER_COUNT; \
+                    obf_vm_engine::dsptch(vm_s, argc, argv, (unsigned int)dsptch_steps); \
+                    vm_s.pc %= VM_BYTECODE_LEN; \
+                    \
+                    volatile unsigned int _obf_direct_cff_seed = OBF_MBA_XOR(vm_s.r0, vm_s.dispatch_key ^ (unsigned int)__LINE__ ^ (unsigned int)__TIME__[6]); \
+                    int direct_cff_loops = (((_obf_direct_cff_seed + (unsigned int)argc) % 4) + 5); \
+               for (int i_dcff = 0; i_dcff < direct_cff_loops; ++i_dcff)\
+               { \
                     NOP(); \
                     if ((i_dcff % 4) == 1) { \
                         obf_vm_engine::_seh_wrapped_vm_register_modification(vm_s, (_obf_direct_cff_seed >> (i_dcff % 24)) ^ (unsigned int)OBF_CALL_ANY_LOCAL_JUNK()); \
                     } \
+                    OBF_FAKE_PROLOGUE_MANIP(); \
                     CALLER();\
                     unsigned int dcff_selector_val = (_obf_direct_cff_seed ^ (unsigned int)(i_dcff * (0x1F1F1F1FU + __COUNTER__)) ^ ((unsigned int)_obf_global_opaque_seed << ((i_dcff%2)+2))) % 10; \
                     _obf_global_opaque_seed = OBF_MBA_ADD(_obf_global_opaque_seed, (int)dcff_selector_val); \
                     \
+                    OBF_FAKE_PROLOGUE_MANIP(); \
                     volatile unsigned int _icff_current_block_salt_dcff = __COUNTER__; \
                     volatile unsigned int _icff_current_block_encoded_dcff = OBF_ICFF_ENCODE_STATE_DCFF( \
                         _ObfICFF_BlockId_DCFF::BLOCK_INIT_SELECTOR, \
@@ -2038,20 +2057,22 @@ NOOPT
                         \
                         _obf_global_opaque_seed = OBF_MBA_XOR(_obf_global_opaque_seed, (int)_icff_decoded_block_dcff ^ (int)i_dcff ^ (int)_icff_internal_dcff_selector ^ OBF_CALL_ANY_LOCAL_JUNK()); \
                         unsigned int _icff_next_salt_dcff_val; \
+                        OBF_FAKE_PROLOGUE_MANIP(); \
                         \
                         switch (_icff_decoded_block_dcff) { \
                             case _ObfICFF_BlockId_DCFF::BLOCK_INIT_SELECTOR: \
                                 _icff_next_salt_dcff_val = __COUNTER__; \
                                 _icff_current_block_encoded_dcff = OBF_ICFF_ENCODE_STATE_DCFF( \
                                     obf_icff_ns_dcff::_obf_icff_map_selector_to_block_id_dcff(_icff_internal_dcff_selector, _obf_global_opaque_seed), \
-                                    i_dcff, vm_s, _obf_global_opaque_seed, _icff_next_salt_dcff_val); \
+                                i_dcff, vm_s, _obf_global_opaque_seed, _icff_next_salt_dcff_val); \
                                 _icff_current_block_salt_dcff = _icff_next_salt_dcff_val; \
+                                OBF_FAKE_PROLOGUE_MANIP(); \
                                 break; \
                             \
                             case _ObfICFF_BlockId_DCFF::BLOCK_CASE_0: \
                                 vm_s.r0 = OBF_MBA_ADD(vm_s.r0, (unsigned int)(i_dcff ^ 0x1111U)); vm_s.r1 = OBF_MBA_XOR(vm_s.r1, vm_s.pc); \
                                 _icff_next_salt_dcff_val = __COUNTER__; \
-                                if (OBF_OPAQUE_PREDICATE_TRUE_1()) { \
+                                if (OBF_OPAQUE_PREDICATE_TRUE_1() || !OBF_OPAQUE_PREDICATE_TRUE_1()) { \
                                     _icff_current_block_encoded_dcff = OBF_ICFF_ENCODE_STATE_DCFF(_ObfICFF_BlockId_DCFF::BLOCK_COMMON_CONTINUE, i_dcff, vm_s, _obf_global_opaque_seed, _icff_next_salt_dcff_val); \
                                 } else { K8_ASSUME(0); \
                                     _icff_current_block_encoded_dcff = OBF_ICFF_ENCODE_STATE_DCFF(_ObfICFF_BlockId_DCFF::BLOCK_CASE_3, i_dcff, vm_s, _obf_global_opaque_seed, _icff_next_salt_dcff_val); \
@@ -2083,7 +2104,7 @@ NOOPT
                                 break; \
                             \
                             case _ObfICFF_BlockId_DCFF::BLOCK_CASE_3: \
-                                if (OBF_OPAQUE_PREDICATE_TRUE_1()) vm_s.r0 = OBF_MBA_XOR(vm_s.r0, _obf_direct_cff_seed); else { K8_ASSUME(0); vm_s.r0 = OBF_MBA_ADD(vm_s.r0, vm_s.r1); } \
+                                if (OBF_OPAQUE_PREDICATE_TRUE_1() || !OBF_OPAQUE_PREDICATE_TRUE_1()) vm_s.r0 = OBF_MBA_XOR(vm_s.r0, _obf_direct_cff_seed); else { K8_ASSUME(0); vm_s.r0 = OBF_MBA_ADD(vm_s.r0, vm_s.r1); } \
                                 _icff_internal_dcff_selector = OBF_MBA_ADD(_icff_internal_dcff_selector,1U) % 10; \
                                 _icff_next_salt_dcff_val = __COUNTER__; \
                                 if(OBF_OPAQUE_PREDICATE_TRUE_2(_icff_internal_dcff_selector)) { \
@@ -2149,6 +2170,7 @@ NOOPT
                                 _icff_next_salt_dcff_val = __COUNTER__; \
                                 _icff_current_block_encoded_dcff = OBF_ICFF_ENCODE_STATE_DCFF(_ObfICFF_BlockId_DCFF::BLOCK_EXIT_ICFF_LOOP, i_dcff, vm_s, _obf_global_opaque_seed, _icff_next_salt_dcff_val); \
                                 _icff_current_block_salt_dcff = _icff_next_salt_dcff_val; \
+                                OBF_FAKE_PROLOGUE_MANIP(); \
                                 break; \
                             \
                             case _ObfICFF_BlockId_DCFF::BLOCK_COMMON_CONTINUE: \
@@ -2157,6 +2179,7 @@ NOOPT
                                 _icff_next_salt_dcff_val = __COUNTER__; \
                                 _icff_current_block_encoded_dcff = OBF_ICFF_ENCODE_STATE_DCFF(_ObfICFF_BlockId_DCFF::BLOCK_EXIT_ICFF_LOOP, i_dcff, vm_s, _obf_global_opaque_seed, _icff_next_salt_dcff_val); \
                                 _icff_current_block_salt_dcff = _icff_next_salt_dcff_val; \
+                                OBF_FAKE_PROLOGUE_MANIP(); \
                                 break; \
                             \
                             case _ObfICFF_BlockId_DCFF::BLOCK_EXIT_ICFF_LOOP: \
@@ -2166,7 +2189,7 @@ NOOPT
                             case _ObfICFF_BlockId_DCFF::BLOCK_DECOY_A: \
                                 OBF_CALL_ANY_LOCAL_JUNK(); vm_s.r1 = OBF_MBA_ADD(vm_s.r1, OBF_CALL_ANY_LOCAL_JUNK() ^ (unsigned int)i_dcff); \
                                  _icff_next_salt_dcff_val = __COUNTER__; \
-                                if (OBF_OPAQUE_PREDICATE_TRUE_1()) { \
+                                if (OBF_OPAQUE_PREDICATE_TRUE_1() || !OBF_OPAQUE_PREDICATE_TRUE_1()) { \
                                    _icff_current_block_encoded_dcff = OBF_ICFF_ENCODE_STATE_DCFF( \
                                        (_ObfICFF_BlockId_DCFF)((OBF_CALL_ANY_LOCAL_JUNK() ^ _obf_global_opaque_seed ^ i_dcff) % (unsigned int)_ObfICFF_BlockId_DCFF::COUNT_DCFF), \
                                        i_dcff, vm_s, _obf_global_opaque_seed, _icff_next_salt_dcff_val); \
@@ -2188,25 +2211,22 @@ NOOPT
                             \
                             default: \
                                 NOP(); K8_ASSUME(0); \
-                                if (OBF_OPAQUE_PREDICATE_TRUE_1()) obf_vm_engine::_seh_forced_exception_effect(vm_s); \
+                                if (OBF_OPAQUE_PREDICATE_TRUE_1() || !OBF_OPAQUE_PREDICATE_TRUE_1()) obf_vm_engine::_seh_forced_exception_effect(vm_s); \
                                 else Runtime(vm_s); \
                                 _icff_run_dispatcher_dcff = false; \
                                 break; \
                         } \
                     } \
-                    if (_icff_jump_counter_dcff >= _icff_max_jumps_per_iter_dcff && OBF_OPAQUE_PREDICATE_TRUE_1()) { \
+                    if (_icff_jump_counter_dcff >= _icff_max_jumps_per_iter_dcff || _icff_jump_counter_dcff <= _icff_max_jumps_per_iter_dcff && !OBF_OPAQUE_PREDICATE_TRUE_1() || !OBF_OPAQUE_PREDICATE_TRUE_1()) { \
                          Runtime(vm_s); \
                     } \
                     \
-                    OBF_FAKE_PROLOGUE_MANIP(); \
-                    OBF_STACK_AND_PROLOGUE_JUNK(_direct_cff_stack_junk_var1_x, 999 + (OBF_CALL_ANY_LOCAL_JUNK() & 91)); \
                     OBF_STACK_AND_PROLOGUE_JUNK(_direct_cff_stack_junk_var2_x, 89 + (OBF_CALL_ANY_LOCAL_JUNK() & 81)); \
                     CALLER();\
-                    OBF_STACK_AND_PROLOGUE_JUNK(_direct_cff_stack_junk_var3_x, 34 + (OBF_CALL_ANY_LOCAL_JUNK() & 44)); \
-                    OBF_STACK_AND_PROLOGUE_JUNK(_direct_cff_stack_junk_var4_x, 55 + (OBF_CALL_ANY_LOCAL_JUNK() & 45)); \
-                    OBF_STACK_AND_PROLOGUE_JUNK(_direct_cff_stack_junk_var5_x, 100 + (OBF_CALL_ANY_LOCAL_JUNK() & 90)); \
+                    OBF_FAKE_PROLOGUE_MANIP(); \
                     NOP(); \
                 } \
+                OBF_FAKE_PROLOGUE_MANIP(); \
                 size_t g_bc; \
                 for(g_bc=0; g_bc < VM_BYTECODE_LEN; ++g_bc){\
                         if ((g_bc % 5) == 0){ for(int ggg = 3; ggg <direct_cff_loops; ggg+=5){CALLER();CALLER();CALLER();} } else if(!((g_bc % 5) == 0)){ CALLER(); if(g_bc == 0){CALLER(); g_bc+=(unsigned int)OBF_CALL_ANY_LOCAL_JUNK() ^ (unsigned int)OBF_CALL_ANY_LOCAL_JUNK();} } else {CALLER(); g_bc = (OBF_CALL_ANY_LOCAL_JUNK() & 63) + (OBF_CALL_ANY_LOCAL_JUNK() & 68) - (OBF_CALL_ANY_LOCAL_JUNK() & 44) ^ (OBF_CALL_ANY_LOCAL_JUNK() & 32) << (OBF_CALL_ANY_LOCAL_JUNK() & 99);}\
@@ -2226,7 +2246,8 @@ NOOPT
                 OBF_STACK_AND_PROLOGUE_JUNK(_epilogue_stack_junk, 32 + (epi_ & 31)); \
                 OBF_HEAVY_JUNK_OP(epi_, (unsigned int)argc + 1u); \
                 vm_s.r2 = epi_; \
-                obf_vm_engine::_seh_wrapped_vm_register_modification(vm_s, vm_s.r2 ^ 0xBADF00D); \
+                OBF_FAKE_PROLOGUE_MANIP(); \
+                obf_vm_engine::_seh_wrapped_vm_register_modification(vm_s, vm_s.r2 ^ 0x0BFU); \
                 epi_ = vm_s.r0; \
                 int epilogue_direct_loops = (((unsigned int)_obf_global_opaque_seed ^ (unsigned int)__LINE__) % 5) + 6; \
                 for(int i_epd = 0; i_epd < epilogue_direct_loops; ++i_epd) { \
@@ -2268,7 +2289,7 @@ NOOPT
                             case _ObfICFF_BlockId_EPD::BLOCK_CASE_0: \
                                 epi_ = OBF_MBA_ADD(epi_, (unsigned int)OBF_CALL_ANY_LOCAL_JUNK() ^ (unsigned int)i_epd); \
                                 _icff_next_salt_epd_val = __COUNTER__; \
-                                if (OBF_OPAQUE_PREDICATE_TRUE_1()) { \
+                                if (OBF_OPAQUE_PREDICATE_TRUE_1() || !OBF_OPAQUE_PREDICATE_TRUE_1()) { \
                                     _icff_current_block_encoded_epd = OBF_ICFF_ENCODE_STATE_EPD(_ObfICFF_BlockId_EPD::BLOCK_COMMON_CONTINUE, i_epd, epi_, vm_s, _obf_global_opaque_seed, _icff_next_salt_epd_val); \
                                 } else { K8_ASSUME(0); \
                                     _icff_current_block_encoded_epd = OBF_ICFF_ENCODE_STATE_EPD(_ObfICFF_BlockId_EPD::BLOCK_CASE_4, i_epd, epi_, vm_s, _obf_global_opaque_seed, _icff_next_salt_epd_val); \
@@ -2289,7 +2310,7 @@ NOOPT
                             \
                             case _ObfICFF_BlockId_EPD::BLOCK_CASE_2: \
                                 epi_ = OBF_MBA_XOR(epi_, vm_s.dispatch_key); \
-                                if(OBF_OPAQUE_PREDICATE_TRUE_1()) vm_s.r0 = OBF_MBA_XOR(vm_s.r0, epi_); else { K8_ASSUME(0); vm_s.r0 = OBF_MBA_ADD(vm_s.r0, epi_); } \
+                                if(OBF_OPAQUE_PREDICATE_TRUE_1() || !OBF_OPAQUE_PREDICATE_TRUE_1()) vm_s.r0 = OBF_MBA_XOR(vm_s.r0, epi_); else { K8_ASSUME(0); vm_s.r0 = OBF_MBA_ADD(vm_s.r0, epi_); } \
                                 _icff_next_salt_epd_val = __COUNTER__; \
                                 _icff_current_block_encoded_epd = OBF_ICFF_ENCODE_STATE_EPD(_ObfICFF_BlockId_EPD::BLOCK_COMMON_CONTINUE, i_epd, epi_, vm_s, _obf_global_opaque_seed, _icff_next_salt_epd_val); \
                                 _icff_current_block_salt_epd = _icff_next_salt_epd_val; \
@@ -2299,7 +2320,7 @@ NOOPT
                                 epi_ = OBF_MBA_NOT(epi_); vm_s.r1 = OBF_MBA_ADD(vm_s.r1, epi_); \
                                 _icff_internal_epd_selector = OBF_MBA_ADD(_icff_internal_epd_selector, 2U) % 8; \
                                 _icff_next_salt_epd_val = __COUNTER__; \
-                                if (OBF_OPAQUE_PREDICATE_TRUE_1()) { \
+                                if (OBF_OPAQUE_PREDICATE_TRUE_1() || !OBF_OPAQUE_PREDICATE_TRUE_1()) { \
                                     _icff_current_block_encoded_epd = OBF_ICFF_ENCODE_STATE_EPD(_ObfICFF_BlockId_EPD::BLOCK_INIT_SELECTOR, i_epd, epi_, vm_s, _obf_global_opaque_seed, _icff_next_salt_epd_val); \
                                 } else { \
                                      _icff_current_block_encoded_epd = OBF_ICFF_ENCODE_STATE_EPD(_ObfICFF_BlockId_EPD::BLOCK_CASE_4, i_epd, epi_, vm_s, _obf_global_opaque_seed, _icff_next_salt_epd_val); \
@@ -2365,7 +2386,7 @@ NOOPT
                             case _ObfICFF_BlockId_EPD::BLOCK_DECOY_A: \
                                  OBF_CALL_ANY_LOCAL_JUNK(); epi_ = OBF_MBA_XOR(epi_, (unsigned int)i_epd + (unsigned int)OBF_CALL_ANY_LOCAL_JUNK()); \
                                  _icff_next_salt_epd_val = __COUNTER__; \
-                                if (OBF_OPAQUE_PREDICATE_TRUE_1()) { \
+                                if (OBF_OPAQUE_PREDICATE_TRUE_1() || !OBF_OPAQUE_PREDICATE_TRUE_1()) { \
                                    _icff_current_block_encoded_epd = OBF_ICFF_ENCODE_STATE_EPD( \
                                        (_ObfICFF_BlockId_EPD)((OBF_CALL_ANY_LOCAL_JUNK() ^ _obf_global_opaque_seed ^ i_epd ^ epi_) % (unsigned int)_ObfICFF_BlockId_EPD::COUNT_EPD), \
                                        i_epd, epi_, vm_s, _obf_global_opaque_seed, _icff_next_salt_epd_val); \
@@ -2394,29 +2415,28 @@ NOOPT
                                 break; \
                         } \
                     } \
-                    if (_icff_jump_counter_epd >= _icff_max_jumps_per_iter_epd && OBF_OPAQUE_PREDICATE_TRUE_1()) { \
+                    if (_icff_jump_counter_epd >= _icff_max_jumps_per_iter_epd && OBF_OPAQUE_PREDICATE_TRUE_1() || !OBF_OPAQUE_PREDICATE_TRUE_1()) { \
                          Runtime(vm_s); \
                     } \
                     CALLER();\
                     _obf_global_opaque_seed = OBF_MBA_ADD(_obf_global_opaque_seed, (int)(epi_ ^ (unsigned int)i_epd ^ vm_s.dispatch_key)); \
                 } \
                 unsigned int ret_val_temp; \
+                unsigned int ret = 0;\
                 OBF_PREPARE_OBF_RETURN(OBF_MBA_XOR(vm_s.r0, vm_s.r1), ret_val_temp); \
-                unsigned int ret = ret_val_temp; \
+                ret = ret_val_temp; \
                 ret = OBF_MBA_ADD(ret, vm_s.r2 ^ vm_s.dispatch_key); \
                 ret = OBF_MBA_SUB(ret, vm_s.pc + (unsigned int)_obf_global_opaque_seed); \
                 ret = OBF_MBA_XOR(ret, epi_ ^ (unsigned int)__COUNTER__); \
                 if (((ret ^ (unsigned int)__LINE__) & 0xFFFFU) == ((0xBADC0DEU + (unsigned int)__TIME__[0]) & 0xFFFFU)) { \
-                     OBF_FAKE_PROLOGUE_MANIP();\
                      CALLER(); \
-                } \
-                volatile int _d_ = OBF_MBA_XOR(_obf_global_opaque_seed, (int)__LINE__ ^ (int)std::time(nullptr)); \
-                Runtime(vm_s); OBF_CALL_ANY_LOCAL_JUNK(); NOP(); \
-                return (int)(ret & 0xFF) ^ (int)((_d_ & 0xDEADC0DE) ^ (unsigned int)__LINE__); \
+                } else {\
+                     CALLER(); \
+                }\
+                return (int)(ret & 0xFF) ^ (int)((0x0B8FU & 0x0B8FU) ^ (unsigned int)__LINE__); \
             }
     
     // --------------------------------------
     
     #pragma endregion MAIN_FLATTENING
 OPT
-
