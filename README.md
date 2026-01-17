@@ -173,12 +173,13 @@ Optional helper API classes are provided in separate headers, typically located 
     *   **Note on Libraries**: While the stealth API resolution aims to avoid static linking for the obfuscated functions, the Windows SDK headers themselves might require certain `.lib` files to be available to the linker for resolving any non-obfuscated SDK usage or internal types (e.g., `Ws2_32.lib`, `Wininet.lib`, `Advapi32.lib`, etc.). For a simple project like `cl /std:c++17 /EHsc main.cpp`, the linker often resolves these automatically if they are standard Windows libraries.
 
 *   **cmake**: you can Build Obfusk8 using cmake too.
-   1. clone and joing to the repo: `git clone https://github.com/x86byte/Obfusk8.git` and joing to the dir `cd Obfusk8`
+   1. clone and joing to the repo: `git clone https://github.com/x86byte/Obfusk8.git` and join to the dir `cd Obfusk8`
    2. configure and generate the files : `cmake CMakeLists.txt`
    3. auto selection of build tools and compiling: `cmake --build .`
+   *   after opening `x64 Native Tools Command Prompt for VS 2022`:
+        ![x64 Native Tools Command Prompt for VS 2022](https://github.com/user-attachments/assets/ef89b4c0-6bc4-40e0-b733-6f9c156677ac)
 
-<img width="1261" height="592" alt="image" src="https://github.com/user-attachments/assets/ef89b4c0-6bc4-40e0-b733-6f9c156677ac" />
-   
+        
 *   **Considerations on Binary Size & Future Enhancements**:
     *   **Size Impact**: Be aware that extensive use of header-only obfuscation, especially with techniques like inlining junk code, MBA expansions, and flattened control flow, can lead to a significant increase in the final binary size. A small program might grow from kilobytes to potentially 2MB or more, depending on the intensity of obfuscation applied.
     *   **Customization & Packing (Future Direction)**:
@@ -196,3 +197,10 @@ This project, Obfusk8, is an ongoing exploration into advanced C++ obfuscation t
 
 **Disclaimer**
 Obfuscation is a layer of defense, not a foolproof solution. Determined attackers with sufficient skill and time can often reverse engineer obfuscated code. Obfusk8 aims to significantly raise the bar for such efforts. Use in conjunction with other security measures.
+
+**Get in Touch**
+If you’d like to share feedback, discuss obfuscation techniques, report reverse engineering attempts, or just have a technical discussion, feel free to reach out directly. I’m always open to constructive conversations and collaboration (i would be happy to collab in obfuscation related projects or anything else).
+
+- x : https://x.com/x86byte  
+- telegram: https://t.me/x86byte  
+- discord: @x86byte
