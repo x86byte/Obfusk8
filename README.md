@@ -172,6 +172,13 @@ Optional helper API classes are provided in separate headers, typically located 
     *   `/I"path/to/your/obfusk8_includes"`: (Optional, if headers are not in default paths) Add the directory where `Obfusk8Core.hpp` and its dependencies are located. If they are in subdirectories, ensure the relative paths within `Obfusk8Core.hpp` match your layout.
     *   **Note on Libraries**: While the stealth API resolution aims to avoid static linking for the obfuscated functions, the Windows SDK headers themselves might require certain `.lib` files to be available to the linker for resolving any non-obfuscated SDK usage or internal types (e.g., `Ws2_32.lib`, `Wininet.lib`, `Advapi32.lib`, etc.). For a simple project like `cl /std:c++17 /EHsc main.cpp`, the linker often resolves these automatically if they are standard Windows libraries.
 
+*   **cmake**: you can Build Obfusk8 using cmake too.
+   1. clone and joing to the repo: `git clone https://github.com/x86byte/Obfusk8.git` and joing to the dir `cd Obfusk8`
+   2. configure and generate the files : `cmake CMakeLists.txt`
+   3. auto selection of build tools and compiling: `cmake --build .`
+
+<img width="1261" height="592" alt="image" src="https://github.com/user-attachments/assets/ef89b4c0-6bc4-40e0-b733-6f9c156677ac" />
+   
 *   **Considerations on Binary Size & Future Enhancements**:
     *   **Size Impact**: Be aware that extensive use of header-only obfuscation, especially with techniques like inlining junk code, MBA expansions, and flattened control flow, can lead to a significant increase in the final binary size. A small program might grow from kilobytes to potentially 2MB or more, depending on the intensity of obfuscation applied.
     *   **Customization & Packing (Future Direction)**:
@@ -183,7 +190,7 @@ Optional helper API classes are provided in separate headers, typically located 
 
 This project, Obfusk8, is an ongoing exploration into advanced C++ obfuscation techniques. The current version lays a strong foundation with a multitude of interwoven strategies.
 
-*   **Future Vision (Obfusk8 v2)**: I envision a "Version 2" that will delve into even more sophisticated areas. A key feature I'm aiming for is **self-packing/unpacking capabilities integrated directly into the obfuscation layer**. This would involve the `_main` macro or a similar mechanism not only obfuscating the code but also embedding the primary application logic in an encrypted/compressed form, which is then decrypted and executed in memory at runtime. This would further enhance resistance to static analysis and reduce the initial on-disk footprint if the compression is effective. Other potential v2 enhancements could include deeper integration of metamorphic code generation, and perhaps even user-configurable obfuscation profiles.
+*   **Future Vision (Obfusk8 release v2)**: I envision a "Version 2" that will delve into even more sophisticated areas. A key feature I'm aiming for is **self-packing/unpacking capabilities integrated directly into the obfuscation layer**. This would involve the `_main` macro or a similar mechanism not only obfuscating the code but also embedding the primary application logic in an encrypted/compressed form, which is then decrypted and executed in memory at runtime. This would further enhance resistance to static analysis and reduce the initial on-disk footprint if the compression is effective. Other potential v2 enhancements could include deeper integration of metamorphic code generation, and perhaps even user-configurable obfuscation profiles.
 
 *   **Your Feedback is Invaluable**: As the developer of Obfusk8, I am keenly interested in your perspective, insights, and any feedback you might have. Whether it's suggestions for new features, improvements to existing techniques, reports of successful (or unsuccessful) reverse engineering attempts against code protected by Obfusk8, or general thoughts on the library's usability and effectiveness – all contributions are welcome and highly appreciated. This project thrives on community input and real-world testing to push its boundaries and become an even more formidable tool for code protection. Please feel free to share your thoughts, raise issues, or contribute to its evolution!
 
