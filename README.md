@@ -180,8 +180,8 @@ Optional helper API classes are provided in separate headers, typically located 
         ![x64 Native Tools Command Prompt for VS 2022](https://github.com/user-attachments/assets/ef89b4c0-6bc4-40e0-b733-6f9c156677ac)
 
 *   **CMAKE && Microsoft Visual Studio**:
-   * after opening `microsoft visual studio`, click on Ctrl + B` to compile the project:
-         <img width="1312" height="734" alt="image" src="https://github.com/user-attachments/assets/bd2bed8a-2aee-4a91-88fa-ffc79df3a416" />
+    *   after opening `microsoft visual studio`, click on `Ctrl + B` to compile the project:
+            ![Microsoft Visual Studio]("https://github.com/user-attachments/assets/bd2bed8a-2aee-4a91-88fa-ffc79df3a416")
         
 *   **Considerations on Binary Size & Future Enhancements**:
     *   **Size Impact**: Be aware that extensive use of header-only obfuscation, especially with techniques like inlining junk code, MBA expansions, and flattened control flow, can lead to a significant increase in the final binary size. A small program might grow from kilobytes to potentially 2MB or more, depending on the intensity of obfuscation applied.
