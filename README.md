@@ -1,11 +1,25 @@
 # Obfusk8: C++17-Based Obfuscation Library
 
-Obfusk8 is a lightweight, header-only C++17 library designed to significantly enhance the obfuscation of your applications, making reverse engineering a substantially more challenging endeavor. It achieves this through a diverse set of compile-time and runtime techniques aimed at protecting your code's logic and data.
+**Obfusk8** is a lightweight, header-only C++17 library designed to significantly enhance the obfuscation of your applications, making reverse engineering a substantially more challenging endeavor. It achieves this through a diverse set of compile-time and runtime techniques aimed at protecting your code's logic and data.
 
    ![banner](https://github.com/user-attachments/assets/09a3c47f-fa56-42f5-b50a-b25d29922de5)
 
 
-**Core Obfuscation Strategies**
+---
+## Table of Contents
+1. [Core Obfuscation Strategies](#core-obfuscation-strategies)
+2. [Dependencies](#dependencies)
+3. [Visualisation](#visualisation)
+4. [Engine Analysis and Detection Profile](#engine-analysis-and-detection-profile)
+5. [Structural and Forensic Characteristics](#structural-and-forensic-characteristics)
+6. [Usage](#usage)
+7. [Building](#building)
+8. [Demo](#demo)
+9. [contribution & Feedback](#contribution--feedback)
+---
+
+
+### Core Obfuscation Strategies
 
 ### 1. `main` Function Wrapping (`_main` Macro)
 The entry point of your application (`main`) is transformed into a complex, multi-layered obfuscation engine:
@@ -40,12 +54,13 @@ A core component of the `_main` macro's obfuscation:
 *   **PEB-Based Resolution**: Dynamically finds base addresses of loaded DLLs and the addresses of API functions by directly parsing Process Environment Block (PEB) data structures at runtime. This bypasses standard `GetModuleHandle` and `GetProcAddress` for initial resolution if those themselves are not yet resolved by this mechanism.
 *   **Hashed Names**: Uses compile-time hashing (custom algorithm `CT_HASH`) of DLL and API names for lookups. This prevents plaintext DLL and API names from appearing in the binary's import-related data or string tables when using these macros.
 
-### 5. Advanced Indirect Syscall Engine (`K8_SYSCALL`) [NEW]
+### 5. Indirect Syscall Engine (`K8_SYSCALL`)
 Obfusk8 now integrates a state-of-the-art Indirect Syscall mechanism to bypass User-Mode Hooks (EDRs/AVs) and static analysis checks.
 *   **"The Sorting Hat" Resolution**: Instead of reading the .text section of ntdll.dll (which is often hooked or monitored), the engine parses the Export Directory. It filters functions starting with Zw, sorts them by memory address, and deduces the System Call Number (SSN) based on their index. This allows SSN resolution without ever touching executable code.
 *   **Lateral Gadget Execution**: The engine does not contain the syscall (0F 05) instruction in its own binary. Instead, it locates a valid syscall; ret gadget inside ntdll.dll memory at runtime.
 Clean Call Stacks: A custom thunk is allocated that jumps to the ntdll gadget. To the OS kernel and security sensors, the system call appears to originate legitimately from ntdll.dll, maintaining a clean call stack.
-*   **Usage**: Simply use `K8_SYSCALL("ZwOpenProcess", ...)` instead of NtOpenProcess.
+*   **Usage**:
+     Simply use `K8_SYSCALL("ZwOpenProcess", ...)` instead of NtOpenProcess.
    
 ### 6. API Abstraction Classes with Built-in Stealth
 Obfusk8 provides helper classes that encapsulate common sets of Windows APIs. These classes automatically use the stealthy API resolution mechanism (`STEALTH_API_OBFSTR`) during their construction, ensuring that the underlying Windows functions are resolved without leaving obvious static import traces.
@@ -84,17 +99,23 @@ These are the building blocks used extensively throughout the library, especiall
     *   **Obfuscated Function Calls (`OBF_CALL_VIA_OBF_PTR`)**: Function pointers are XORed with a dynamic key before and after being used, obscuring the true call target.
     *   `K8_ASSUME(0)`: Used in dead code paths to hint to the MSVC compiler that these paths are unreachable, potentially allowing for different optimizations or code generation that might further confuse analysis if the assumption is violated by a patch.
 
-**Dependencies**
-The Obfusk8 library is modular. Core functionality relies on:
-- `Obfusk8Core.hpp`: (This file) The central header that orchestrates and provides the main obfuscation macros and primitives.
-- `AES8.hpp`: Provides AES-based compile-time string encryption and optional PE section manipulation features.
-- `Resolve8.hpp`: Implements the PEB-based stealthy Windows API resolution.
+### Dependencies
 
+The Obfusk8 library is modular. Core functionality relies on:
+
+- `Obfusk8/Instrumentation/materialization/state/Obfusk8Core.hpp`: (This file) The central header that orchestrates and provides the main obfuscation macros and primitives.
+- `Obfusk8/Instrumentation/materialization/transform/AES8.hpp`: Provides AES-based compile-time string encryption and optional PE section manipulation features.
+- `Obfusk8/Instrumentation/materialization/transform/Resolve8.hpp`: Implements the PEB-based stealthy Windows API resolution.
+* `Obfusk8/Instrumentation/materialization/transform/k8_indsys.hpp`: Orchestrates the **Indirect Syscall Engine**. It manages the lifecycle of transition stubs and provides the interface for executing system calls through lateral memory gadgets.
+* `Obfusk8/Instrumentation/materialization/transform/getpeb8.hpp`: Facilitates the initial bootstrap and **PEB Discovery**. It contains the custom hashing logic, native structure definitions, and the "Sorting Hat" algorithm for SSN deduction. It serves as the low-level foundation for all module enumeration tasks.
 Optional helper API classes are provided in separate headers, typically located in subdirectories:
 - `k8_ProcessManipulationAPIs/k8_ProcessManipulationAPIs.hpp`: For stealthy process manipulation APIs.
 - `k8_CryptographyAPIs/k8_CryptographyAPIs.hpp`: For stealthy cryptography APIs.
 - `k8_NetworkingAPIs/k8_NetworkingAPIs.hpp`: For stealthy networking APIs.
 - `k8_RegistryAPIs/k8_RegistryAPIs.hpp`: For stealthy registry APIs.
+
+
+### Visualisation
 
   *   **ida graph**:
     
@@ -127,14 +148,34 @@ Optional helper API classes are provided in separate headers, typically located 
 
       ![bfiles](https://github.com/user-attachments/assets/704e55ab-da0c-4279-8bd6-f830b2e638c9)
 
-### Demo:
-   [[Obfusk8: C++17-Based Obfuscation Library - IDA pro Graph View] ~Video Demo](https://youtu.be/B9g4KSg3tHQ)
+### Engine Analysis and Detection Profile
 
-**Usage**
+Obfusk8 is designed to prioritize the bypass of static signature-based detection engines. Testing against industry-standard vendors shows that the core obfuscation logic remains undetected by major security products, including:
 
-1.  Include `Obfusk8Core.hpp` in your main project file (e.g., `main.cpp`).
+*   **Microsoft Defender**: Undetected
+*   **Kaspersky**: Undetected
+*   **ESET-NOD32**: Undetected
+*   **BitDefender**: Undetected
+
+While static signatures are bypassed, certain Next-Gen AVs and EDRs (such as CrowdStrike or Symantec) may generate heuristic flags labeled as "suspicious" or "high Confidence Malicious." These detections are typically triggered by the high architectural complexity and the presence of custom PE sections rather than identifiable malicious code.
+
+### Structural and Forensic Characteristics
+
+*   **entropy management**: The current implementation produces a global entropy of approximately 6.2. This is intentionally balanced to be high enough to obscure logic but low enough to avoid the common "packed file" alerts triggered by entropy levels above 7.0.
+*   **Section Customization**: the default configuration includes 23 PE sections, some of which use decoy names (e.g., `.themida`, `.vmp0`, `.enigma2`) to mimic known commercial protectors. 
+    *   **Heuristic Optimization**: to further reduce the suspicion score, users can rename these sections to generic strings (e.g., `.data_01`, `.rdata_aux`). Standardizing section names often lowers the heuristic "uniqueness" score, making the binary appear more like a conventional compiled application.
+*   **Import Obfuscation**: The library successfully eliminates the Import Address Table (IAT) footprint for critical Windows APIs. By utilizing the Process Environment Block (PEB) for resolution and the Indirect Syscall engine, the binary maintains a clean call stack, preventing behavioral monitors from tracing system calls back to protected code regions.
+     - **quick explanation**:
+        *   **ssn deduction**: to bypass user-mode hooks often placed on the instruction stream of ntdll.dll, the engine utilizes a relative sorting algorithm. By parsing the Export Directory and sorting all Zw-prefixed functions by their memory addresses, the engine deduces System Service Numbers (SSNs) based on their relative index. This allows the framework to identify the correct syscall index without ever reading the hooked bytes of the function prologue.
+Dynamic Syscall Stubs: Instead of utilizing static syscall instructions within the user-land binary, the library dynamically allocates executable memory to host transient transition stubs. The engine populates these stubs with a custom shellcode sequence (`mov r10, rcx; mov eax, ssnnumber; syscall; ret`) to execute system calls indirectly.
+        *   **chain bootstrapping**: the resolution process is self-bootstrapped; the engine uses an initial resolved call to establish the environment for subsequent indirect syscalls. This ensures that the entire lifecycle of the process—from module enumeration to function execution—remains opaque to behavioral monitors and maintains a clean call stack.
+*   **anti-Forensics**: The use of Mixed Boolean-Arithmetic (MBA) and multi-layered Virtual Instruction Set Architecture (V-ISA) ensures that even if a memory dump is obtained, the underlying logic is non-trivial to reconstruct through automated deobfuscation tools.
+
+### Usage
+
+1.  Include `Obfusk8/Instrumentation/materialization/state/Obfusk8Core.hpp` in your main project file (e.g., `main.cpp`).
     ```cpp
-    #include "Obfusk8Core.hpp" // Adjust path as needed
+    #include "Obfusk8/Instrumentation/materialization/state/Obfusk8Core.hpp" // Adjust path as needed
     ```
 2.  Wrap your `main` function's body with the `_main`:
     ```cpp
@@ -156,13 +197,13 @@ Optional helper API classes are provided in separate headers, typically located 
         delete netAPI;
     })
     ```
-3.  Use `OBFUSCATE_STRING("your string")` for all important string literals. Access the decrypted string via its `.c_str()` method if needed for API calls, or use its other methods like `.print_to_console()` if provided by `AES8.hpp`.
+3.  Use `OBFUSCATE_STRING("your string")` for all important string literals. Access the decrypted string via its `.c_str()` method if needed for API calls, or use its other methods like `.print_to_console()` if provided by `Obfusk8/Instrumentation/materialization/transform/AES8.hpp`.
 4.  Use `STEALTH_API_OBFSTR("dll_name.dll", "FunctionNameA")` for direct stealthy API calls, or preferably use the API wrapper classes (e.g., `K8_ProcessManipulationAPIs::ProcessAPI`, `k8_NetworkingAPIs::NetworkingAPI`) for convenience and built-in stealth.
 5.  Sprinkle `OBF_BOGUS_FLOW_*`, `OBF_CALL_ANY_LOCAL_JUNK`, `NOP()`, and other primitives in performance-insensitive critical sections of your code for added obfuscation layers.
 
 * see the main.cpp file.
 
-**Building**
+### Building
 
 *   **Compiler Requirement**: This library is designed for C++17. The Microsoft C++ Compiler (`cl.exe`) is primarily targeted, especially for PE section features and SEH usage.
 *   **Getting `cl.exe` (MSVC Compiler) on Windows**:
@@ -170,8 +211,8 @@ Optional helper API classes are provided in separate headers, typically located 
     2.  **Select Workload**: During installation, make sure to select the "Desktop development with C++" workload. This will install the C++ compiler, Windows SDK, and other necessary tools.
     3.  **Use Developer Command Prompt**: After installation, search for "Developer Command Prompt for VS" (e.g., "x64 Native Tools Command Prompt for VS 2022") in your Start Menu and run it. This command prompt automatically sets up the environment variables (PATH, INCLUDE, LIB) needed to use `cl.exe`.
 *   **Include Paths**:
-    *   Ensure the directory containing `Obfusk8Core.hpp` is in your compiler's include path.
-    *   If `AES8.hpp`, `Resolve8.hpp`, and the API wrapper directories (e.g., `k8_NetworkingAPIs/`) are not in the same directory as `Obfusk8Core.hpp`, ensure their paths are also correctly configured. `Obfusk8Core.hpp` uses relative paths like `../Obfusk8Core.hpp` for some of its internal includes of the API wrappers, so the directory structure matters. If `Obfusk8Core.hpp` is at the root of your include directory for this library, then API wrappers should be in subdirectories like `k8_NetworkingAPIs/` relative to where `Obfusk8Core.hpp` expects them or adjust the include paths within `Obfusk8Core.hpp` itself.
+    *   Ensure the directory containing `Obfusk8/Instrumentation/materialization/state/Obfusk8Core.hpp` is in your compiler's include path.
+    *   If `Obfusk8/Instrumentation/materialization/transform/AES8.hpp`, `Obfusk8/Instrumentation/materialization/transform/Resolve8.hpp`, and the API wrapper directories (e.g., `k8_NetworkingAPIs/`) are not in the same directory as `Obfusk8/Instrumentation/materialization/state/Obfusk8Core.hpp`, ensure their paths are also correctly configured. `Obfusk8/Instrumentation/materialization/state/Obfusk8Core.hpp` uses relative paths like `../Obfusk8Core.hpp` for some of its internal includes of the API wrappers, so the directory structure matters. If `Obfusk8/Instrumentation/materialization/state/Obfusk8Core.hpp` is at the root of your include directory for this library, then API wrappers should be in subdirectories like `k8_NetworkingAPIs/` relative to where `Obfusk8/Instrumentation/materialization/state/Obfusk8Core.hpp` expects them or adjust the include paths within `Obfusk8/Instrumentation/materialization/state/Obfusk8Core.hpp` itself.
 *   **Compilation Example (using Developer Command Prompt)**:
     Assuming your `main.cpp` and the Obfusk8 headers are structured correctly, you can compile using a command similar to:
     ```bash
@@ -185,7 +226,7 @@ Optional helper API classes are provided in separate headers, typically located 
     *   `/std:c++17`: Specifies C++17 standard.
     *   `/EHsc`: Specifies the C++ exception handling model.
     *   `main.cpp`: Your main source file.
-    *   `/I"path/to/your/obfusk8_includes"`: (Optional, if headers are not in default paths) Add the directory where `Obfusk8Core.hpp` and its dependencies are located. If they are in subdirectories, ensure the relative paths within `Obfusk8Core.hpp` match your layout.
+    *   `/I"path/to/your/obfusk8_includes"`: (Optional, if headers are not in default paths) Add the directory where `Obfusk8/Instrumentation/materialization/state/Obfusk8Core.hpp` and its dependencies are located. If they are in subdirectories, ensure the relative paths within `Obfusk8Core.hpp` match your layout.
     *   **Note on Libraries**: While the stealth API resolution aims to avoid static linking for the obfuscated functions, the Windows SDK headers themselves might require certain `.lib` files to be available to the linker for resolving any non-obfuscated SDK usage or internal types (e.g., `Ws2_32.lib`, `Wininet.lib`, `Advapi32.lib`, etc.). For a simple project like `cl /std:c++17 /EHsc main.cpp`, the linker often resolves these automatically if they are standard Windows libraries.
 
 *   **CMAKE**: you can Build Obfusk8 using cmake too.
@@ -208,13 +249,17 @@ Optional helper API classes are provided in separate headers, typically located 
         *   For substantial size reduction post-obfuscation, integrating or using an external PE packer (like UPX, MPRESS, or custom solutions) would be a separate step.
         *   Future development of Obfusk8 could explore options for more granular control over obfuscation intensity or even integrate lightweight packing/compression stubs directly within the library, though this would significantly increase its complexity.
 
-**mindmap & Feedback**
+
+### Demo
+   [[Obfusk8: C++17-Based Obfuscation Library - IDA pro Graph View] ~Video Demo](https://youtu.be/B9g4KSg3tHQ)
+
+
+### contribution & Feedback
 
 This project, Obfusk8, is an ongoing exploration into advanced C++ obfuscation techniques. The current version lays a strong foundation with a multitude of interwoven strategies.
 
-*   **Future Vision (Obfusk8 release v2)**: I envision a "Version 2" that will delve into even more sophisticated areas. A key feature I'm aiming for is **self-packing/unpacking capabilities integrated directly into the obfuscation layer**. This would involve the `_main` macro or a similar mechanism not only obfuscating the code but also embedding the primary application logic in an encrypted/compressed form, which is then decrypted and executed in memory at runtime. This would further enhance resistance to static analysis and reduce the initial on-disk footprint if the compression is effective. Other potential v2 enhancements could include deeper integration of metamorphic code generation, and perhaps even user-configurable obfuscation profiles.
-
-*   **Your Feedback is Invaluable**: As the developer of Obfusk8, I am keenly interested in your perspective, insights, and any feedback you might have. Whether it's suggestions for new features, improvements to existing techniques, reports of successful (or unsuccessful) reverse engineering attempts against code protected by Obfusk8, or general thoughts on the library's usability and effectiveness – all contributions are welcome and highly appreciated. This project thrives on community input and real-world testing to push its boundaries and become an even more formidable tool for code protection. Please feel free to share your thoughts, raise issues, or contribute to its evolution!
+*   **Your Feedback is Invaluable**: As the developer of Obfusk8, I am keenly interested in your perspective, insights, and any feedback you might have. Whether it's suggestions for new features, improvements to existing techniques, reports of successful (or unsuccessful) reverse engineering attempts against code protected by Obfusk8, or general thoughts on the library's usability and effectiveness.
+*   **Contribution**: all contributions are welcome and highly appreciated. This project thrives on community input and real-world testing to push its boundaries and become an even more formidable tool for code protection. Please feel free to share your thoughts, raise issues, or contribute to its evolution!.
 
 **Disclaimer**
 Obfuscation is a layer of defense, not a foolproof solution. Determined attackers with sufficient skill and time can often reverse engineer obfuscated code. Obfusk8 aims to significantly raise the bar for such efforts. Use in conjunction with other security measures.
