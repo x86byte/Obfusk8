@@ -165,6 +165,7 @@ Optional helper API classes are provided in separate headers, typically located 
     cl /std:c++17 /EHsc main.cpp
     ```
     *   after opening `x64 Native Tools Command Prompt for VS 2022`:
+      
         ![x64 Native Tools Command Prompt for VS 2022](https://github.com/user-attachments/assets/f5da8da0-b466-4836-a525-0e37acf4b8cb)
 
         
