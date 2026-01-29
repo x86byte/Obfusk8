@@ -120,7 +120,7 @@ Optional helper API classes are provided in separate headers, typically located 
 
   *   **bounded files**:
 
-      ![bfiles](https://github.com/user-attachments/assets/704e55ab-da0c-4279-8bd6-f830b2e638c9")
+      ![bfiles](https://github.com/user-attachments/assets/704e55ab-da0c-4279-8bd6-f830b2e638c9)
 
 ### Demo:
    [[Obfusk8: C++17-Based Obfuscation Library - IDA pro Graph View] ~Video Demo](https://youtu.be/B9g4KSg3tHQ)
