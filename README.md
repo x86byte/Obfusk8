@@ -113,7 +113,11 @@ Optional helper API classes are provided in separate headers, typically located 
   *   **memory map (from die)**:
 
       ![map](https://github.com/user-attachments/assets/396bda32-9054-4116-a1e7-80b0bc41096d)
+  
+  *   **sections**:
 
+      ![sections](https://github.com/user-attachments/assets/7ac099ad-b5f3-4c19-9fcb-7573d94c7996)
+  
 ### Demo:
    [[Obfusk8: C++17-Based Obfuscation Library - IDA pro Graph View] ~Video Demo](https://youtu.be/B9g4KSg3tHQ)
 
