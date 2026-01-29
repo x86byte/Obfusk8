@@ -181,7 +181,7 @@ Optional helper API classes are provided in separate headers, typically located 
 
 *   **CMAKE && Microsoft Visual Studio**:
     *   after opening `microsoft visual studio`, click on `Ctrl + B` to compile the project:
-            ![Microsoft Visual Studio]("https://github.com/user-attachments/assets/bd2bed8a-2aee-4a91-88fa-ffc79df3a416")
+       ![Microsoft Visual Studio](https://github.com/user-attachments/assets/bd2bed8a-2aee-4a91-88fa-ffc79df3a416)
         
 *   **Considerations on Binary Size & Future Enhancements**:
     *   **Size Impact**: Be aware that extensive use of header-only obfuscation, especially with techniques like inlining junk code, MBA expansions, and flattened control flow, can lead to a significant increase in the final binary size. A small program might grow from kilobytes to potentially 2MB or more, depending on the intensity of obfuscation applied.
