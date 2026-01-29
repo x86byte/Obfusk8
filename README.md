@@ -97,20 +97,22 @@ Optional helper API classes are provided in separate headers, typically located 
 - `k8_RegistryAPIs/k8_RegistryAPIs.hpp`: For stealthy registry APIs.
 
   *   **ida graph**:
+    
       ![image](https://github.com/user-attachments/assets/680f542e-88c0-472e-8149-4ee6c80e82a2)
      
   *   **some chunks from ida pro**:
+    
       ![image](https://github.com/user-attachments/assets/2bdc6270-96d9-4448-9557-54f9ef4035e3)
       ![image](https://github.com/user-attachments/assets/952584b4-f046-4ff4-a3a4-c485fa370aa8)
       ![image](https://github.com/user-attachments/assets/54128487-445c-42c9-86df-202f77a2eb73)
     
   *   **detect it easy signatures results**:
+    
       ![image](https://github.com/user-attachments/assets/460889f8-49a7-4d6d-a226-442d4cece4db)
     
   *   **memory map (from die)**:
 
-<img width="629" height="620" alt="image" src="https://github.com/user-attachments/assets/396bda32-9054-4116-a1e7-80b0bc41096d" />
-
+      ![map](https://github.com/user-attachments/assets/396bda32-9054-4116-a1e7-80b0bc41096d)
 
 ### Demo:
    [[Obfusk8: C++17-Based Obfuscation Library - IDA pro Graph View] ~Video Demo](https://youtu.be/B9g4KSg3tHQ)
