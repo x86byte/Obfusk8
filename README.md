@@ -177,10 +177,12 @@ Optional helper API classes are provided in separate headers, typically located 
    2. configure and generate the files : `cmake CMakeLists.txt`
    3. auto selection of build tools and compiling: `cmake --build .`
    *   after opening `x64 Native Tools Command Prompt for VS 2022`:
+     
         ![x64 Native Tools Command Prompt for VS 2022](https://github.com/user-attachments/assets/ef89b4c0-6bc4-40e0-b733-6f9c156677ac)
 
 *   **CMAKE && Microsoft Visual Studio**:
     *   after opening `microsoft visual studio`, click on `Ctrl + B` to compile the project:
+      
        ![Microsoft Visual Studio](https://github.com/user-attachments/assets/bd2bed8a-2aee-4a91-88fa-ffc79df3a416)
         
 *   **Considerations on Binary Size & Future Enhancements**:
