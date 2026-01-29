@@ -109,7 +109,12 @@ Optional helper API classes are provided in separate headers, typically located 
   *   **detect it easy signatures results**:
     
       ![image](https://github.com/user-attachments/assets/460889f8-49a7-4d6d-a226-442d4cece4db)
-    
+
+  *   **Crowdsourced YARA rules from virustotal**:
+
+      ![yararules](https://github.com/user-attachments/assets/5ce206ef-37b7-43b2-a94d-5bde9afb002b)
+
+
   *   **memory map (from die)**:
 
       ![map](https://github.com/user-attachments/assets/396bda32-9054-4116-a1e7-80b0bc41096d)
