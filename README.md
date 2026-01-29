@@ -172,13 +172,16 @@ Optional helper API classes are provided in separate headers, typically located 
     *   `/I"path/to/your/obfusk8_includes"`: (Optional, if headers are not in default paths) Add the directory where `Obfusk8Core.hpp` and its dependencies are located. If they are in subdirectories, ensure the relative paths within `Obfusk8Core.hpp` match your layout.
     *   **Note on Libraries**: While the stealth API resolution aims to avoid static linking for the obfuscated functions, the Windows SDK headers themselves might require certain `.lib` files to be available to the linker for resolving any non-obfuscated SDK usage or internal types (e.g., `Ws2_32.lib`, `Wininet.lib`, `Advapi32.lib`, etc.). For a simple project like `cl /std:c++17 /EHsc main.cpp`, the linker often resolves these automatically if they are standard Windows libraries.
 
-*   **cmake**: you can Build Obfusk8 using cmake too.
+*   **CMAKE**: you can Build Obfusk8 using cmake too.
    1. clone and joing to the repo: `git clone https://github.com/x86byte/Obfusk8.git` and join to the dir `cd Obfusk8`
    2. configure and generate the files : `cmake CMakeLists.txt`
    3. auto selection of build tools and compiling: `cmake --build .`
    *   after opening `x64 Native Tools Command Prompt for VS 2022`:
         ![x64 Native Tools Command Prompt for VS 2022](https://github.com/user-attachments/assets/ef89b4c0-6bc4-40e0-b733-6f9c156677ac)
 
+*   **CMAKE && Microsoft Visual Studio**:
+   * after opening `microsoft visual studio`, click on Ctrl + B` to compile the project:
+         <img width="1312" height="734" alt="image" src="https://github.com/user-attachments/assets/bd2bed8a-2aee-4a91-88fa-ffc79df3a416" />
         
 *   **Considerations on Binary Size & Future Enhancements**:
     *   **Size Impact**: Be aware that extensive use of header-only obfuscation, especially with techniques like inlining junk code, MBA expansions, and flattened control flow, can lead to a significant increase in the final binary size. A small program might grow from kilobytes to potentially 2MB or more, depending on the intensity of obfuscation applied.
