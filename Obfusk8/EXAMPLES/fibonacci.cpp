@@ -5,7 +5,6 @@
 using namespace std;
 
 /*
-
 to hide the main use :
     _main({})
 
@@ -29,7 +28,3 @@ _main
 ({
     cout << OBFUSCATE_STRING("fib : ").c_str() << fib(8);
 })
-
-
-
-
