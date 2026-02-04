@@ -61,7 +61,65 @@ Obfusk8 now integrates a state-of-the-art Indirect Syscall mechanism to bypass U
 Clean Call Stacks: A custom thunk is allocated that jumps to the ntdll gadget. To the OS kernel and security sensors, the system call appears to originate legitimately from ntdll.dll, maintaining a clean call stack.
 *   **Usage**:
      Simply use `K8_SYSCALL("ZwOpenProcess", ...)` instead of NtOpenProcess.
-   
+
+### 6. Method-Based Obfuscation with (`OBF_METHOD`)
+Obfusk8 now provides granular control over your binary's security through **Method-Based Obfuscation**. Instead of obfuscating your entire project (which can impact performance), you can now selectively protect specific, high-value functions or class methods.
+
+---
+
+### **How to Use**
+
+1. **Include the Pass**  
+   Ensure you include the method obfuscation logic in your project:
+   ```cpp
+   #include "../transform/PASSES/obf_cmethods.cxx"
+   ```
+
+2. **The Macro Syntax**  
+   Define your method using the `OBF_METHOD` macro:
+   ```cpp
+   OBF_METHOD(ret_type, func_name, params, method_body)
+   ```
+   *   **`ret_type`**: The return type of your function (e.g., `bool`, `int`, `void*`).
+   *   **`func_name`**: The name of the method.
+   *   **`params`**: The function parameters (must be enclosed in parentheses).
+   *   **`method_body`**: The actual logic of your function enclosed in `{ }`.
+
+---
+
+### **Example: Standard vs Obfuscated methods**
+
+In this example, `PrintStatus` is a normal, readable function. `Obfusk8_PrintStatus` is protected by Obfusk8.
+
+```cpp
+#include "Obfusk8Core.hpp"
+
+class Obfusk8_C
+{
+public:
+    // standard method which is visible to reverse engineers
+    void PrintStatus(void)
+    {
+        printf_("method\n");
+    }
+
+    // Obfuscated method protected by Obfusk8
+    OBF_METHOD_(void, Obfusk8_PrintStatus, (void),
+    {
+        printf_("same method but Obfuscated\n");
+    })
+};
+
+_main({
+    Obfusk8_C *pp = new Obfusk8_C;
+    pp->PrintStatus();
+    pp->Obfusk8_PrintStatus();
+    delete pp;
+})
+```
+*You can view the full example here: [obfusk8_methods.cpp](https://github.com/x86byte/Obfusk8/blob/main/Obfusk8/EXAMPLES/obfusk8_methods.cpp)*
+
+---
 ### 6. API Abstraction Classes with Built-in Stealth
 Obfusk8 provides helper classes that encapsulate common sets of Windows APIs. These classes automatically use the stealthy API resolution mechanism (`STEALTH_API_OBFSTR`) during their construction, ensuring that the underlying Windows functions are resolved without leaving obvious static import traces.
 
