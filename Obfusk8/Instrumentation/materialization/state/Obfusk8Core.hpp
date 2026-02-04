@@ -1938,6 +1938,17 @@ NOOPT
                 OBF_CALL_ANY_LOCAL_JUNK(); \
             } while (0)
 
+    #pragma region OBF_CALSSMETHODS
+    // --------------------------------------
+
+            #include "../transform/PASSES/obf_cmethods.cxx"
+
+            #define OBF_METHOD(ret_type, func_name, params, method_body) \
+                                OBF_METHOD_(ret_type, func_name, params, method_body)
+
+    // --------------------------------------
+    #pragma endregion OBF_CALSSMETHODS
+
     #define _main(main_body) \
             int main(int argc = 0, char** argv = nullptr) { \
                 OBF_BOGUS_FLOW_CYCLONE();\
@@ -2440,3 +2451,4 @@ NOOPT
     
     #pragma endregion MAIN_FLATTENING
 OPT
+
