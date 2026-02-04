@@ -50,6 +50,8 @@
 #pragma region HELPERS_
 // ------------------------------------------------
     K8_FORCEINLINE uint32_t _bstrap_hash(const char* str);
+
+    #define printf_(to_p) printf(OBFUSCATE_STRING(to_p).c_str());
 // ------------------------------------------------
 #pragma endregion HELPERS_
 
@@ -123,4 +125,5 @@
 #pragma endregion NT_STRUCTURES
 
 #endif
+
 
