@@ -92,7 +92,8 @@ Obfusk8 now provides granular control over your binary's security through **Meth
 In this example, `PrintStatus` is a normal, readable function. `Obfusk8_PrintStatus` is protected by Obfusk8.
 
 ```cpp
-#include "Obfusk8Core.hpp"
+#include "../Instrumentation/materialization/state/Obfusk8Core.hpp"
+#include "../Instrumentation/materialization/transform/K8_UTILS/k8_utils.hpp" // for the printf_, u can change the printf_ with anything else...
 
 class Obfusk8_C
 {
