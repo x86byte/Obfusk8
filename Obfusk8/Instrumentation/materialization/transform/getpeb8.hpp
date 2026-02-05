@@ -193,7 +193,7 @@ NOOPT
 
         void* fnAllocAddr = nullptr;
         for (uint32_t i = 0; i < exp->NumberOfNames; ++i) {
-            if (_bstrap_hash((char*)(base + names[i])) == _bstrap_hash("NtAllocateVirtualMemory"))
+            if (_bstrap_hash((char*)(base + names[i])) == _bstrap_hash(OBFUSCATE_STRING("NtAllocateVirtualMemory")))
             {
                 fnAllocAddr = (void*)(base + funcs[ords[i]]);
                 break;
