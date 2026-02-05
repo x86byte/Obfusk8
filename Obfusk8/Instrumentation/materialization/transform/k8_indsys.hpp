@@ -17,7 +17,7 @@ NOOPT
 
             std::wstring w = std::wstring(len + 1, L'\0');
             const char* src = s;
-            wchar_t* dst = w.c_str();
+            wchar_t* dst = w.data();
 
             while (*src)
             {
