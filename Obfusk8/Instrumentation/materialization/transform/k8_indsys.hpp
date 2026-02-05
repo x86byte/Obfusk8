@@ -10,16 +10,14 @@ NOOPT
         static std::vector<SyscallEntry> _g_syscall_map;
         static bool _g_is_initialized = false;
 
-        wchar_t* parse(const char* s)
+        __forceinline std::wstring parse(const char* s)
         {
             size_t len = 0;
             while (*(s + len)) len++;
 
-            wchar_t* w = (wchar_t*)malloc((len + 1) * sizeof(wchar_t));
-            if(!w)
-                return (NULL);
+            std::wstring w = std::wstring(len + 1, L'\0');
             const char* src = s;
-            wchar_t* dst = w;
+            wchar_t* dst = w.c_str();
 
             while (*src)
             {
@@ -27,14 +25,15 @@ NOOPT
                 src++;
                 dst++;
             }
-            return (*dst = 0, w);
+			*dst = 0;
+            return w;
         }
 
         __forceinline void InitSyscallEngine()
         {
             if (_g_is_initialized) return;
 
-            HMODULE hNtdll = StealthResolver::GetModuleHandleH_sys(runtime_hash_w_aes((const wchar_t *)parse(OBFUSCATE_STRING("ntdll.dll").c_str())));
+            HMODULE hNtdll = StealthResolver::GetModuleHandleH_sys(runtime_hash_w_aes(parse(OBFUSCATE_STRING("ntdll.dll").c_str()).c_str()));
             if (!hNtdll) return;
 
             uint8_t* base = (uint8_t*)hNtdll;
@@ -125,9 +124,9 @@ NOOPT
             __forceinline bool Init() {
                 if (_stub_mem) return true;
 
-                HMODULE hNtdll = StealthResolver::GetModuleHandleH_sys(runtime_hash_w_aes((const wchar_t *)parse(OBFUSCATE_STRING("ntdll.dll").c_str())));
+                HMODULE hNtdll = StealthResolver::GetModuleHandleH_sys(runtime_hash_w_aes(parse(OBFUSCATE_STRING("ntdll.dll").c_str()).c_str()));
                 typedef NTSTATUS (NTAPI * pAlloc)(HANDLE, PVOID*, ULONG_PTR, PSIZE_T, ULONG, ULONG);
-                pAlloc fnAlloc = (pAlloc)StealthResolver::GetProcAddressH_sys(hNtdll, runtime_hash_w_aes((const wchar_t *)parse(OBFUSCATE_STRING("NtAllocateVirtualMemory").c_str())));
+                pAlloc fnAlloc = (pAlloc)StealthResolver::GetProcAddressH_sys(hNtdll, runtime_hash_w_aes(parse(OBFUSCATE_STRING("NtAllocateVirtualMemory").c_str()).c_str()));
 
                 if (!fnAlloc) return false;
 
