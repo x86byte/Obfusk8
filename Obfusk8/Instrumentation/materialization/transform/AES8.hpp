@@ -213,6 +213,48 @@ NOOPT
                 }
             };
 
+            #define _L_SUB(a, b) ( \
+                ((unsigned int)(a) ^ (unsigned int)(b)) - \
+                (2 * ((~(unsigned int)(a)) & (unsigned int)(b))) \
+            )
+        
+            #define _L_XOR(a, b) ( \
+                ((unsigned int)(a) | (unsigned int)(b)) - \
+                ((unsigned int)(a) & (unsigned int)(b)) \
+            )
+        
+            #define _L_OR(a, b) ( \
+                ((unsigned int)(a) + (unsigned int)(b)) - \
+                ((unsigned int)(a) & (unsigned int)(b)) \
+            )
+        
+            K8_FORCEINLINE uint32_t _bstrap_hash(const char* str) {
+                uint32_t h = _BSTRAP_IV;
+                if (!str) return 0;
+        
+                while (*str) {
+                    char c = *str++;
+                    if (c >= 'a' && c <= 'z')
+                        c = (char)_L_SUB((int)c, 0x20);
+                    uint8_t low_byte = (uint8_t)_L_XOR((h & 0xFF), (uint32_t)c);
+                    uint8_t sub = aes_constexpr::sbox[low_byte];
+                    h = _L_OR((h >> 8), (h << 24));
+                    h = _L_XOR(h, (uint32_t)sub);
+                }
+                return h;
+            }
+        
+            K8_FORCEINLINE uint32_t _char_hasher(char c) {
+                uint32_t h = _BSTRAP_IV;
+                if (c >= 'a' && c <= 'z' || c >= 'A' && c <= 'Z')
+                   c = (char)_L_SUB((int)c, 0x20);
+                uint8_t low_byte = (uint8_t)_L_XOR((h & 0xFF), (uint32_t)c);
+                uint8_t sub = aes_constexpr::sbox[low_byte];
+                h = _L_OR((h >> 8), (h << 24));
+                h = _L_XOR(h, (uint32_t)sub);
+                return h;
+            }
+
             #define CONCAT2(a,b) a##b
             #define CONCAT(a,b) CONCAT2(a,b)
         // ------------------------------------------------
@@ -388,3 +430,4 @@ NOOPT
         // ------------------------------------------------
         #pragma endregion Chunks
 OPT
+
