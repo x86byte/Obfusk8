@@ -193,7 +193,7 @@ NOOPT
 
         void* fnAllocAddr = nullptr;
         for (uint32_t i = 0; i < exp->NumberOfNames; ++i) {
-            if (_bstrap_hash((char*)(base + names[i])) == _bstrap_hash(OBFUSCATE_STRING("NtAllocateVirtualMemory")))
+            if (_bstrap_hash((char*)(base + names[i])) == _bstrap_hash(OBFUSCATE_STRING("NtAllocateVirtualMemory").c_str()))
             {
                 fnAllocAddr = (void*)(base + funcs[ords[i]]);
                 break;
@@ -220,4 +220,5 @@ NOOPT
             return ((uintptr_t)pbi.PebBaseAddress);
         return 0;
     }
+
 OPT
