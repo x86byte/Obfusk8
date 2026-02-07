@@ -13,6 +13,9 @@ NOOPT
         __forceinline std::wstring parse(const char* s)
         {
             size_t len = 0;
+
+			if(!s)
+				return nullptr;
             while (*(s + len)) len++;
 
             std::wstring w = std::wstring(len + 1, L'\0');
@@ -51,7 +54,7 @@ NOOPT
             for (uint32_t i = 0; i < exp->NumberOfNames; ++i)
             {
                 char* name = (char*)(base + names[i]);
-                if (name[0] == 'Z' && name[1] == 'w') {
+                if (_char_hasher((char)name[0]) == _char_hasher((char)(('y' + 1) - 32)) && _char_hasher((char)name[1]) == _char_hasher((char)('a' + 22))) {
                     SyscallEntry entry;
                     entry.hash = runtime_hash_aes(name);
                     uint32_t funcRva = funcs[ords[i]];
@@ -185,3 +188,4 @@ NOOPT
         }
     }
 OPT
+
