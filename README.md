@@ -336,6 +336,9 @@ This project, Obfusk8, is an ongoing exploration into advanced C++ obfuscation t
 *   **Contribution**: all contributions are welcome and highly appreciated. This project thrives on community input and real-world testing to push its boundaries and become an even more formidable tool for code protection. Please feel free to share your thoughts, raise issues, or contribute to its evolution!.
       *    **[How to contribute Obfusk8?](https://opensource.guide/how-to-contribute/)**
 
+### Special Thanks
+*   [sadMosquito](https://github.com/sadMosquito) — for reporting issues and testing the project
+
 **Disclaimer**
 Obfuscation is a layer of defense, not a foolproof solution. Determined attackers with sufficient skill and time can often reverse engineer obfuscated code. Obfusk8 aims to significantly raise the bar for such efforts. Use in conjunction with other security measures.
 
