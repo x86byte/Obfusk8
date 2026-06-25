@@ -112,12 +112,13 @@ namespace k8_CryptographyAPIs
                     HMODULE hAdvApi32 = this->pLoadLibraryA(OBFUSCATE_STRING("advapi32.dll").c_str());
                     if (!hAdvApi32) {
                         printf("CRITICAL: Failed to load advapi32.dll using resolved pLoadLibraryA. Many crypto functions will be unavailable.\n");
-
+                        return;
                     }
                     
                     HMODULE hCrypt32 = this->pLoadLibraryA(OBFUSCATE_STRING("crypt32.dll").c_str());
                     if (!hCrypt32) {
                          printf("WARNING: Failed to load crypt32.dll. CryptStringToBinary, CryptBinaryToString, CryptProtectData will be unavailable.\n");
+                         return;
                     }
 
                     pCryptAcquireContextA       =       reinterpret_cast<CryptAcquireContextA_t>(STEALTH_API_OBFSTR("advapi32.dll", "CryptAcquireContextA"));

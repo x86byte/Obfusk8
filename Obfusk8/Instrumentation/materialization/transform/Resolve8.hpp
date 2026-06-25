@@ -286,9 +286,15 @@ NOOPT
                     uint32_t expRva = nt->OptionalHeader.DataDirectory[IMAGE_DIRECTORY_ENTRY_EXPORT].VirtualAddress;
                     if (expRva == 0) return nullptr;
                     PIMAGE_EXPORT_DIRECTORY exp = (PIMAGE_EXPORT_DIRECTORY)(VALID_OBF_MBA_ADD(base, expRva));
-                    for (uint32_t i = 0; i < exp->NumberOfNames; ++i)
-                        if (runtime_hash_aes((char*)(base + *((uint32_t*)(VALID_OBF_MBA_ADD(base, exp->AddressOfNames)) + i))) == funcHash)
-                            return (void*)(base + *((uint32_t*)(VALID_OBF_MBA_ADD(base, exp->AddressOfFunctions)) + *((uint16_t*)(VALID_OBF_MBA_ADD(base, exp->AddressOfNameOrdinals)) + i)));
+                    uint32_t* nameArray = (uint32_t*)(VALID_OBF_MBA_ADD(base, exp->AddressOfNames));
+                    uint32_t* funcArray = (uint32_t*)(VALID_OBF_MBA_ADD(base, exp->AddressOfFunctions));
+                    uint16_t* ordArray = (uint16_t*)(VALID_OBF_MBA_ADD(base, exp->AddressOfNameOrdinals));
+                    for (uint32_t i = 0; i < exp->NumberOfNames; ++i) {
+                        uint16_t ord = ordArray[i];
+                        if (ord >= exp->NumberOfFunctions) continue;
+                        if (runtime_hash_aes((char*)(base + nameArray[i])) == funcHash)
+                            return (void*)(base + funcArray[ord]);
+                    }
                     return nullptr;
                 }
     
@@ -309,6 +315,7 @@ NOOPT
 
                     if (expRva == 0) return nullptr;
                     uint32_t numberOfNames = *PtrAdd < uint32_t > ((void *) VALID_OBF_MBA_ADD(pBase, (uintptr_t)expRva), calc_offset_aes(0x18));
+                    uint32_t numberOfFunctions = *PtrAdd < uint32_t > ((void *) VALID_OBF_MBA_ADD(pBase, (uintptr_t)expRva), calc_offset_aes(0x14));
                     uint32_t addrOfFunctions = *PtrAdd < uint32_t > ((void *) VALID_OBF_MBA_ADD(pBase, (uintptr_t)expRva), calc_offset_aes(0x1C));
                     uint32_t addrOfNames = *PtrAdd < uint32_t > ((void *) VALID_OBF_MBA_ADD(pBase, (uintptr_t)expRva), calc_offset_aes(0x20));
                     uint32_t addrOfOrdinals = *PtrAdd < uint32_t > ((void *) VALID_OBF_MBA_ADD(pBase, (uintptr_t)expRva), calc_offset_aes(0x24));
@@ -333,6 +340,7 @@ NOOPT
                                 ordPtr = VALID_OBF_MBA_ADD(pBase, VALID_OBF_MBA_ADD((uintptr_t)addrOfOrdinals, (uintptr_t)(i * 2)));
                                 if (ordPtr) {
                                     uint16_t ordinal = *(uint16_t *) ordPtr;
+                                    if (ordinal >= numberOfFunctions) return nullptr;
                                     uintptr_t funcRvaPtr = VALID_OBF_MBA_ADD(pBase, VALID_OBF_MBA_ADD((uintptr_t)addrOfFunctions, (uintptr_t)(ordinal * 4)));
                                     if (funcRvaPtr) {
                                         uint32_t funcRva = *(uint32_t * )funcRvaPtr;

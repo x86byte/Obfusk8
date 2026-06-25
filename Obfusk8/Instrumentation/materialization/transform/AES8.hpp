@@ -467,7 +467,7 @@ constexpr uint32_t _obf_date_hash() {
                         result[i] = (wchar_t)((uint16_t)out_raw[i*2] | ((uint16_t)out_raw[i*2+1] << 8));
                 } else {
                     size_t final_len = raw_size;
-                    for (size_t i = 1; i < final_len; ++i)
+                    for (size_t i = 0; i < final_len; ++i)
                         if (out_raw[i] == 0) { final_len = i; break; }
                     result = string((char*)out_raw, final_len);
                 }

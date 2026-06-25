@@ -6,6 +6,7 @@
 #include <cstdint>
 #include <random>
 #include <type_traits>
+#include <functional>
 #include "../transform/K8_UTILS/k8_utils.hpp"
 
 NOOPT
@@ -77,7 +78,7 @@ NOOPT
     
     // --------------------------------------
     #pragma endregion Reg
-    
+
     #pragma region dec
     // --------------------------------------
     
@@ -91,7 +92,7 @@ NOOPT
         #define NOP() \
             do { \
                 volatile int __obf_nop_val = __COUNTER__ ^ (int)__LINE__; \
-                _obf_global_opaque_seed = (_obf_global_opaque_seed ^ __obf_nop_val ^ (int)std::time(nullptr)); \
+                _obf_global_opaque_seed = (_obf_global_opaque_seed ^ __obf_nop_val ^ (int)time(nullptr)); \
                 (void)__obf_nop_val; \
             } while(0)
     
@@ -252,103 +253,651 @@ NOOPT
     
     #pragma region JUNK
     // --------------------------------------
-    
+
         #ifndef _obf_global_opaque_seed
         extern volatile int _obf_global_opaque_seed;
         #endif
-        // need more dev...
+
         #define OBF_JUNK_BODY_1 \
             volatile int x_jb = __COUNTER__ + 11 + _obf_global_opaque_seed; \
             x_jb ^= (0xDEADBEEFU + (int)__TIME__[0]); \
-            x_jb += (int)std::time(nullptr); \
+            x_jb += (int)time(nullptr); \
             return x_jb;
+
         #define OBF_JUNK_BODY_2 \
             volatile int x_jb = (__COUNTER__ * 3) ^ (_obf_global_opaque_seed); \
             for(int i_jb=0; i_jb<((__COUNTER__%2)+2); ++i_jb) x_jb ^= i_jb; \
             return x_jb;
+
         #define OBF_JUNK_BODY_3 \
             volatile int x_jb = (0x1234 | (99 + __COUNTER__)) ^ _obf_global_opaque_seed; \
             x_jb &= (0xFFFFU + (int)__TIME__[1]); \
             x_jb ^= (x_jb << (((__COUNTER__)%3)+1)%32); \
             return x_jb;
+
         #define OBF_JUNK_BODY_4 \
             volatile int x_jb4 = __COUNTER__ ^ _obf_global_opaque_seed, y_jb4 = 7 + (__COUNTER__ % 5); \
             x_jb4 += y_jb4 * y_jb4; \
             x_jb4 ^= y_jb4; \
             x_jb4 = (x_jb4 << 1) | (x_jb4 >> 31); \
             return x_jb4;
+
         #define OBF_JUNK_BODY_5 \
-            volatile int x_jb5 = (((int)std::time(nullptr) ^ _obf_global_opaque_seed + __COUNTER__) % 7); \
+            volatile int x_jb5 = (((int)time(nullptr) ^ _obf_global_opaque_seed + __COUNTER__) % 7); \
             if (x_jb5 == 0) x_jb5 = 1; \
             x_jb5 = (x_jb5 * 13) + 71; \
             return x_jb5;
+
         #define OBF_JUNK_BODY_6 \
-            volatile int x_jb = (int)std::time(nullptr) ^ (_obf_global_opaque_seed * __COUNTER__); \
+            volatile int x_jb = (int)time(nullptr) ^ (_obf_global_opaque_seed * __COUNTER__); \
             int z = ((x_jb & 0xFF) * 0x1F1F1F1F) ^ (__COUNTER__ + _obf_global_opaque_seed); \
             x_jb = z ^ (x_jb << 2); \
             x_jb ^= ((int)__TIME__[2] | (int)__TIME__[3]); \
             return x_jb;
+
         #define OBF_JUNK_BODY_7 \
-            volatile int x_jb = ((int)std::time(nullptr) + _obf_global_opaque_seed + __COUNTER__) ^ 0x0F0F0F0F; \
+            volatile int x_jb = ((int)time(nullptr) + _obf_global_opaque_seed + __COUNTER__) ^ 0x0F0F0F0F; \
             x_jb = ((x_jb << 3) | (x_jb >> 29)) ^ (int)__LINE__; \
             return x_jb;
-    
+
+        #define OBF_JUNK_BODY_8 \
+            volatile uint64_t _tsc8 = __rdtsc(); \
+            volatile int x_jb8 = (int)((_tsc8 ^ (uint64_t)_obf_global_opaque_seed) & 0xFFFFFFFFULL); \
+            x_jb8 ^= (int)(__COUNTER__ * 0x6B2F5D1U); \
+            return x_jb8;
+
+        #define OBF_JUNK_BODY_9 \
+            volatile uintptr_t _sp9 = (uintptr_t)_AddressOfReturnAddress(); \
+            volatile int x_jb9 = (int)(_sp9 & 0xFFFFU) ^ _obf_global_opaque_seed ^ (int)__COUNTER__; \
+            x_jb9 = ((x_jb9 << 7) | (x_jb9 >> 25)) ^ (int)__LINE__; \
+            return x_jb9;
+
+        #define OBF_JUNK_BODY_10 \
+            volatile int _tid10 = (int)GetCurrentThreadId(); \
+            volatile int x_jb10 = (_tid10 ^ _obf_global_opaque_seed) * (int)(__COUNTER__ | 1); \
+            x_jb10 ^= (int)time(nullptr) & 0xFFFF; \
+            return x_jb10;
+
+        #define OBF_JUNK_BODY_11 \
+            typedef int(*_jfp11_t)(); \
+            volatile _jfp11_t _fp11 = []() -> int { \
+                return (int)__COUNTER__ ^ (int)time(nullptr); \
+            }; \
+            uintptr_t _sc11 = (uintptr_t)__COUNTER__ ^ (uintptr_t)_obf_global_opaque_seed; \
+            volatile _jfp11_t* _fpp11 = &_fp11; \
+            _fp11 = (_jfp11_t)((uintptr_t)_fp11 ^ _sc11); \
+            _fp11 = (_jfp11_t)((uintptr_t)_fp11 ^ _sc11); \
+            return (*_fpp11)();
+
+        #define OBF_JUNK_BODY_12 \
+            volatile unsigned int _h12 = (unsigned int)_obf_global_opaque_seed ^ (unsigned int)__COUNTER__; \
+            _h12 = (_h12 ^ 0xDEADBEEFU) + (_h12 << 4); \
+            _h12 = _h12 ^ (_h12 >> 10); \
+            _h12 = _h12 + (_h12 << 7); \
+            _h12 = _h12 ^ (_h12 >> 13); \
+            return (int)_h12;
+
+        #define OBF_JUNK_BODY_13 \
+            function<int()> _fn13 = [&]() -> int { \
+                return (int)__COUNTER__ ^ _obf_global_opaque_seed ^ (int)time(nullptr); \
+            }; \
+            volatile uintptr_t _sfn13_addr = (uintptr_t)&_fn13; \
+            function<int()>* _sfn13 = \
+                (function<int()>*)(uintptr_t)_sfn13_addr; \
+            return (*_sfn13)();
+
+        #define OBF_JUNK_BODY_14 \
+            volatile unsigned int _r14 = (unsigned int)__COUNTER__ ^ (unsigned int)_obf_global_opaque_seed; \
+            unsigned int _sh14 = (unsigned int)__TIME__[3] & 0x1FU; \
+            _r14 = (_r14 << _sh14) | (_r14 >> (32U - _sh14)); \
+            _r14 ^= (unsigned int)(uintptr_t)_AddressOfReturnAddress() & 0xFFFFU; \
+            _r14 *= 0x9E3779B1U; \
+            return (int)(_r14 ^ (unsigned int)__LINE__);
+
         #define OBF_DECLARE_JUNK_FUNC(N, body) K8_FORCEINLINE static int obf_junk_func_##N() { body }
-    
+
         namespace obf_junk_ns {
-            OBF_DECLARE_JUNK_FUNC(1, OBF_JUNK_BODY_1) 
-            OBF_DECLARE_JUNK_FUNC(2, OBF_JUNK_BODY_2)
-            OBF_DECLARE_JUNK_FUNC(3, OBF_JUNK_BODY_3)
-            OBF_DECLARE_JUNK_FUNC(4, OBF_JUNK_BODY_4)
-            OBF_DECLARE_JUNK_FUNC(5, OBF_JUNK_BODY_5)
-            OBF_DECLARE_JUNK_FUNC(6, OBF_JUNK_BODY_6)
-            OBF_DECLARE_JUNK_FUNC(7, OBF_JUNK_BODY_7)
-            OBF_DECLARE_JUNK_FUNC(8, OBF_JUNK_BODY_1)
-            OBF_DECLARE_JUNK_FUNC(9, OBF_JUNK_BODY_2)
-            OBF_DECLARE_JUNK_FUNC(10, OBF_JUNK_BODY_3)
-            OBF_DECLARE_JUNK_FUNC(11, OBF_JUNK_BODY_4)
-            OBF_DECLARE_JUNK_FUNC(12, OBF_JUNK_BODY_5)
-            OBF_DECLARE_JUNK_FUNC(13, OBF_JUNK_BODY_6)
-            OBF_DECLARE_JUNK_FUNC(14, OBF_JUNK_BODY_7)
+            OBF_DECLARE_JUNK_FUNC(1,  OBF_JUNK_BODY_1)
+            OBF_DECLARE_JUNK_FUNC(2,  OBF_JUNK_BODY_2)
+            OBF_DECLARE_JUNK_FUNC(3,  OBF_JUNK_BODY_3)
+            OBF_DECLARE_JUNK_FUNC(4,  OBF_JUNK_BODY_4)
+            OBF_DECLARE_JUNK_FUNC(5,  OBF_JUNK_BODY_5)
+            OBF_DECLARE_JUNK_FUNC(6,  OBF_JUNK_BODY_6)
+            OBF_DECLARE_JUNK_FUNC(7,  OBF_JUNK_BODY_7)
+            OBF_DECLARE_JUNK_FUNC(8,  OBF_JUNK_BODY_8)
+            OBF_DECLARE_JUNK_FUNC(9,  OBF_JUNK_BODY_9)
+            OBF_DECLARE_JUNK_FUNC(10, OBF_JUNK_BODY_10)
+            OBF_DECLARE_JUNK_FUNC(11, OBF_JUNK_BODY_11)
+            OBF_DECLARE_JUNK_FUNC(12, OBF_JUNK_BODY_12)
+            OBF_DECLARE_JUNK_FUNC(13, OBF_JUNK_BODY_13)
+            OBF_DECLARE_JUNK_FUNC(14, OBF_JUNK_BODY_14)
             OBF_DECLARE_JUNK_FUNC(15, OBF_JUNK_BODY_1)
             OBF_DECLARE_JUNK_FUNC(16, OBF_JUNK_BODY_2)
             OBF_DECLARE_JUNK_FUNC(17, OBF_JUNK_BODY_3)
-            OBF_DECLARE_JUNK_FUNC(18, OBF_JUNK_BODY_4)
-            OBF_DECLARE_JUNK_FUNC(19, OBF_JUNK_BODY_5)
-            OBF_DECLARE_JUNK_FUNC(20, OBF_JUNK_BODY_6)
-            OBF_DECLARE_JUNK_FUNC(21, OBF_JUNK_BODY_7)
-            OBF_DECLARE_JUNK_FUNC(22, OBF_JUNK_BODY_1)
-            OBF_DECLARE_JUNK_FUNC(23, OBF_JUNK_BODY_2)
-            OBF_DECLARE_JUNK_FUNC(24, OBF_JUNK_BODY_3)
+            OBF_DECLARE_JUNK_FUNC(18, OBF_JUNK_BODY_8)
+            OBF_DECLARE_JUNK_FUNC(19, OBF_JUNK_BODY_9)
+            OBF_DECLARE_JUNK_FUNC(20, OBF_JUNK_BODY_10)
+            OBF_DECLARE_JUNK_FUNC(21, OBF_JUNK_BODY_11)
+            OBF_DECLARE_JUNK_FUNC(22, OBF_JUNK_BODY_12)
+            OBF_DECLARE_JUNK_FUNC(23, OBF_JUNK_BODY_13)
+            OBF_DECLARE_JUNK_FUNC(24, OBF_JUNK_BODY_14)
             OBF_DECLARE_JUNK_FUNC(25, OBF_JUNK_BODY_4)
             OBF_DECLARE_JUNK_FUNC(26, OBF_JUNK_BODY_5)
             OBF_DECLARE_JUNK_FUNC(27, OBF_JUNK_BODY_6)
             OBF_DECLARE_JUNK_FUNC(28, OBF_JUNK_BODY_7)
-    
+
             using obf_junk_func_ptr = int(*)();
             static obf_junk_func_ptr obf_junk_func_table[] = {
-                obf_junk_func_1, obf_junk_func_2, obf_junk_func_3, obf_junk_func_4, obf_junk_func_5, obf_junk_func_6, obf_junk_func_7,
-                obf_junk_func_8, obf_junk_func_9, obf_junk_func_10, obf_junk_func_11, obf_junk_func_12, obf_junk_func_13, obf_junk_func_14,
-                obf_junk_func_15, obf_junk_func_16, obf_junk_func_17, obf_junk_func_18, obf_junk_func_19, obf_junk_func_20, obf_junk_func_21,
-                obf_junk_func_22, obf_junk_func_23, obf_junk_func_24, obf_junk_func_25, obf_junk_func_26, obf_junk_func_27, obf_junk_func_28
+                obf_junk_func_1,  obf_junk_func_2,  obf_junk_func_3,  obf_junk_func_4,
+                obf_junk_func_5,  obf_junk_func_6,  obf_junk_func_7,  obf_junk_func_8,
+                obf_junk_func_9,  obf_junk_func_10, obf_junk_func_11, obf_junk_func_12,
+                obf_junk_func_13, obf_junk_func_14, obf_junk_func_15, obf_junk_func_16,
+                obf_junk_func_17, obf_junk_func_18, obf_junk_func_19, obf_junk_func_20,
+                obf_junk_func_21, obf_junk_func_22, obf_junk_func_23, obf_junk_func_24,
+                obf_junk_func_25, obf_junk_func_26, obf_junk_func_27, obf_junk_func_28
             };
-            constexpr size_t obf_junk_func_table_size = sizeof(obf_junk_func_table)/sizeof(obf_junk_func_ptr);
+            constexpr unsigned int obf_junk_func_table_size =
+                (unsigned int)(sizeof(obf_junk_func_table)/sizeof(obf_junk_func_ptr));
         }
-    
+
         #define OBF_CALL_ANY_LOCAL_JUNK() \
             (obf_junk_ns::obf_junk_func_table[ \
-                ((_obf_global_opaque_seed ^ __COUNTER__ ^ (int)std::time(nullptr) ^ (int)__LINE__) & 0x7FFFFFFF) % obf_junk_ns::obf_junk_func_table_size \
+                (unsigned int)(((_obf_global_opaque_seed ^ __COUNTER__ ^ \
+                 (int)time(nullptr) ^ (int)__LINE__) & 0x7FFFFFFF) \
+                 % obf_junk_ns::obf_junk_func_table_size) \
             ]())
-    
-    // --------------------------------------
+
+        template<unsigned int X> struct K8_XS32 {
+            static constexpr unsigned int s1 = X ^ (X << 13u);
+            static constexpr unsigned int s2 = s1 ^ (s1 >> 17u);
+            static constexpr unsigned int value = s2 ^ (s2 << 5u);
+        };
+
+        template<unsigned int SEED, unsigned int BASE>
+        struct K8_SC {
+            static constexpr unsigned int value = BASE ^ SEED;
+        };
+
+        namespace k8_sink_ns {
+            static volatile unsigned int k8_sink[64];
+        }
+
+        template<unsigned int SEED>
+        K8_NOINLINE static void k8_fake_rc4_sched() {
+            volatile unsigned char S[16];
+            unsigned int k = K8_SC<SEED,0x61626364u>::value;
+            for(int i=0; i < 16; ++i)
+                S[i] = (unsigned char)(i ^ (k >> i));
+            unsigned int j = 0;
+            for(int i2 = 0; i2 < 16; ++i2){
+                j = (j + S[i2] + (k >> (i2 & 7))) & 0xFu;
+                unsigned char t = S[i2]; S[i2] = S[j]; S[j] = t;
+            }
+            k8_sink_ns::k8_sink[SEED&63u]^=(unsigned int)S[0]^K8_SC<SEED,0xFEED0000u>::value;
+            _obf_global_opaque_seed = OBF_MBA_XOR(_obf_global_opaque_seed,(int)k8_sink_ns::k8_sink[SEED&63u]);
+        }
+
+        template<unsigned int SEED>
+        K8_NOINLINE static void k8_fake_murmur3() {
+            volatile unsigned int h = K8_SC<SEED, 0x9747B28Cu>::value^(unsigned int)_obf_global_opaque_seed;
+            volatile unsigned int k2 = K8_SC<SEED, 0xCC9E2D51u>::value;
+            k2 *= 0x1B873593u; k2 = (k2 << 15) | (k2 >> 17); k2 *= 0x85EBCA6Bu;
+            h ^= k2; h = (h << 13) | (h >> 19);
+            h = h * 5u + K8_SC<SEED, 0xE6546B64u>::value;
+            h ^= h >> 16;
+            h *= K8_SC<SEED, 0x85EBCA6Bu>::value;
+            h ^= h >> 13;
+            h *= K8_SC<SEED, 0xC2B2AE35u>::value;
+            h ^= h >> 16;
+            k8_sink_ns::k8_sink[(SEED >> 4) & 63u] += h;
+            _obf_global_opaque_seed = OBF_MBA_ADD(_obf_global_opaque_seed, (int)h);
+        }
+
+        template<unsigned int SEED>
+        K8_NOINLINE static void k8_fake_fnv1a() {
+            volatile unsigned int h = 0x811C9DC5u ^ K8_SC<SEED, 0u>::value;
+            for(int i=0;i<8;++i){
+                unsigned char b=(unsigned char)((SEED>>(i*4))^K8_SC<SEED,0xA5u>::value);
+                h=(h^b)*0x01000193u;
+            }
+            k8_sink_ns::k8_sink[(SEED>>8)&63u]^=h;
+            _obf_global_opaque_seed=OBF_MBA_XOR(_obf_global_opaque_seed,(int)h);
+        }
+
+        template<unsigned int SEED>
+        K8_NOINLINE static void k8_fake_crc32() {
+            volatile unsigned int crc = 0xFFFFFFFFu ^ K8_SC<SEED, 0xDEAD0000u>::value;
+            for(int i = 0 ; i < 8; ++i){
+                unsigned char byte = (unsigned char)(SEED >> (i * 3));
+                crc ^= (unsigned int)byte;
+                for(int b2 = 0; b2 < 8;++b2)
+                    crc = (crc >> 1) ^ (0xEDB88320u & (unsigned int)(0u - (crc & 1u)));
+            }
+            crc ^= 0xFFFFFFFFu;
+            k8_sink_ns::k8_sink[(SEED >> 12) & 63u] += crc;
+            _obf_global_opaque_seed=OBF_MBA_SUB(_obf_global_opaque_seed,(int)crc);
+        }
+
+        template<unsigned int SEED>
+        K8_NOINLINE static void k8_fake_aes_sbox() {
+            constexpr unsigned int _c0 = K8_SC<SEED,0x52096AD5u>::value;
+            constexpr unsigned int _c1 = K8_SC<SEED,0x63636363u>::value;
+            constexpr unsigned int _c2 = K8_SC<SEED,0x05050505u>::value;
+            volatile unsigned int state[4];
+            for(int i = 0; i < 4; ++i)
+                state[i] = _c0 ^ ((unsigned int)i * 0x9E3779B9u);
+            for(int r = 0; r < 4; ++r){
+                unsigned int x = state[r];
+                x = OBF_MBA_XOR(x, _c1);
+                x = (x << 1) | (x >> 31);
+                x ^= _c2;
+                state[r] = x;
+            }
+            unsigned int out = state[0] ^ state[1] ^ state[2] ^ state[3];
+            k8_sink_ns::k8_sink[(SEED >> 16) & 63u] ^= out;
+            _obf_global_opaque_seed = OBF_MBA_XOR(_obf_global_opaque_seed, (int)out);
+        }
+
+        template<unsigned int SEED>
+        K8_NOINLINE static void k8_fake_str_scan() {
+            static const volatile char _buf[16] = {
+                (char)(SEED & 0xFF), (char)((SEED >> 8) & 0xFF),
+                (char)((SEED >> 16) & 0xFF),(char)((SEED >> 24) & 0xFF),
+                'O', 'b', 'f', 'u', 's', 'k', '8', 0, 0, 0, 0, 0
+            };
+            volatile int len = 0;
+            const volatile char* p = _buf;
+            while(*p && len < 16)
+            {
+                ++p;
+                ++len;
+            }
+            k8_sink_ns::k8_sink[(SEED >> 20) & 63u] += (unsigned int)len ^ K8_SC<SEED, 0xABCDu>::value;
+            _obf_global_opaque_seed = OBF_MBA_ADD(_obf_global_opaque_seed, len ^ (int)__LINE__);
+        }
+
+        template<unsigned int SEED>
+        K8_NOINLINE static void k8_fake_bitpack() {
+            volatile unsigned int packed=0u;
+            unsigned int fields[4] = {
+                K8_SC<SEED, 0x1Fu>::value & 0x1Fu,
+                K8_SC<SEED, 0x3Eu>::value & 0x3Fu,
+                K8_SC<SEED, 0x7Du>::value & 0x7Fu,
+                K8_SC<SEED, 0xFCu>::value & 0xFFu
+            };
+            packed |= (fields[0] & 0x1Fu);
+            packed |= (fields[1] & 0x3Fu) << 5;
+            packed |= (fields[2] & 0x7Fu) << 11;
+            packed |= (fields[3] & 0xFFu) << 18;
+            unsigned int a = (packed >> 0) & 0x1Fu;
+            unsigned int b2 = (packed >> 5) & 0x3Fu;
+            (void)a;
+            (void)b2;
+            k8_sink_ns::k8_sink[(SEED >> 3) & 63u] ^= packed;
+            _obf_global_opaque_seed = OBF_MBA_XOR(_obf_global_opaque_seed, (int)packed);
+        }
+
+        template<unsigned int SEED>
+        K8_NOINLINE static void k8_fake_memchk() {
+            volatile unsigned int buf[8];
+            for(int i = 0; i < 8; ++i)
+                buf[i] = K8_SC<SEED, 0xDEADBEEFu>::value ^ ((unsigned int) i * 0x6B2F5D1u);
+            volatile unsigned int sum = 0u;
+            for(int i = 0; i < 8; ++i)
+                sum = OBF_MBA_ADD(sum, buf[i]);
+            sum ^= K8_SC<SEED,0x5A5A5A5Au>::value;
+            k8_sink_ns::k8_sink[(SEED >> 6) & 63u] += sum;
+            _obf_global_opaque_seed = OBF_MBA_ADD(_obf_global_opaque_seed, (int)sum);
+        }
+
+        template<unsigned int SEED>
+        K8_NOINLINE static void k8_fake_lfsr() {
+            volatile unsigned int reg = K8_SC<SEED, 0xACE1u>::value;
+            volatile unsigned int taps = K8_SC<SEED, 0xB400u>::value;
+            for(int i = 0; i < 16; ++i){
+                unsigned int lsb=reg&1u;
+                reg >>= 1;
+                if(lsb)
+                    reg ^= taps;
+            }
+            k8_sink_ns::k8_sink[(SEED >> 9) & 63u] ^= reg;
+            _obf_global_opaque_seed = OBF_MBA_XOR(_obf_global_opaque_seed, (int)reg);
+        }
+
+        template<unsigned int SEED>
+        K8_NOINLINE static void k8_fake_wang() {
+            volatile unsigned int h=K8_SC<SEED,0x9E3779B9u>::value
+                                   ^ (unsigned int)_obf_global_opaque_seed;
+            h = (h ^ 0xDEADBEEFu) + (h << 4);
+            h ^= h >> 10;
+            h += (h << 7);
+            h ^= h >> 13;
+            h += K8_SC<SEED,0x165667B1u>::value;
+            h ^= h >> 16;
+            h *= K8_SC<SEED, 0x45D9F3Bu>::value;
+            h ^= h >> 16;
+            k8_sink_ns::k8_sink[(SEED >> 11) & 63u] += h;
+            _obf_global_opaque_seed=OBF_MBA_XOR(_obf_global_opaque_seed, (int)h);
+        }
+
+        template<unsigned int SEED>
+        K8_NOINLINE static void k8_fake_rol_chain() {
+            volatile unsigned int v=K8_SC<SEED,0x12345678u>::value;
+            for(int i=0;i<8;++i){
+                unsigned int r=(K8_SC<SEED,0x1Fu>::value^(unsigned int)i)&0x1Fu;
+                if(r==0) r=7u;
+                v=(v<<r)|(v>>(32u-r));
+                v^=K8_SC<K8_XS32<SEED>::value,0xCAFEBABEu>::value;
+            }
+            k8_sink_ns::k8_sink[(SEED>>14)&63u]^=v;
+            _obf_global_opaque_seed=OBF_MBA_XOR(_obf_global_opaque_seed,(int)v);
+        }
+
+        template<unsigned int SEED>
+        K8_NOINLINE static void k8_fake_xor_ladder() {
+            constexpr unsigned int _c0 = K8_SC<SEED,0xAAAAAAAAu>::value;
+            constexpr unsigned int _c1 = K8_SC<SEED,0x55555555u>::value;
+            constexpr unsigned int _c2 = K8_SC<SEED,0xF0F0F0F0u>::value;
+            volatile unsigned int a  = _c0;
+            volatile unsigned int b2 = _c1;
+            for(int i=0;i<8;++i){
+                a  = OBF_MBA_XOR(a,  b2 ^ (unsigned int)(i*0x01010101u));
+                b2 = OBF_MBA_ADD(b2, a  ^ _c2);
+            }
+            k8_sink_ns::k8_sink[(SEED>>17)&63u] += a^b2;
+            _obf_global_opaque_seed = OBF_MBA_ADD(_obf_global_opaque_seed, (int)(a^b2));
+        }
+
+        template<unsigned int SEED>
+        K8_NOINLINE static void k8_fake_matrix_mul() {
+            volatile unsigned int m[4] = {
+                K8_SC<SEED,0x11223344u>::value, K8_SC<SEED,0x55667788u>::value,
+                K8_SC<SEED,0x99AABBCCu>::value, K8_SC<SEED,0xDDEEFF00u>::value
+            };
+            volatile unsigned int v2[2] = {K8_SC<SEED, 0x13579BDFu>::value,
+                                         K8_SC<SEED, 0x2468ACEu>::value};
+            volatile unsigned int r0 = OBF_MBA_ADD(OBF_MBA_MUL_CONST3(m[0] ^ v2[0]), m[1] ^ v2[1]);
+            volatile unsigned int r1 = OBF_MBA_ADD(OBF_MBA_MUL_CONST3(m[2] ^ v2[0]), m[3] ^ v2[1]);
+            k8_sink_ns::k8_sink[(SEED >> 2) & 63u] ^= r0 ^ r1;
+            _obf_global_opaque_seed = OBF_MBA_XOR(_obf_global_opaque_seed, (int)(r0 ^ r1));
+        }
+
+        template<unsigned int SEED>
+        K8_NOINLINE static void k8_fake_poly_eval() {
+            volatile unsigned int x = K8_SC<SEED, 0xBEEFCAFEu>::value;
+            volatile unsigned int r = K8_SC<SEED, 0xFEDCBA98u>::value;
+            for(int i = 1; i < 6; ++i){
+                unsigned int ci = K8_SC<K8_XS32<SEED>::value, 0x10000000u>::value ^ (unsigned int)i;
+                r = OBF_MBA_ADD(OBF_MBA_MUL_CONST3(r), ci);
+                r = OBF_MBA_XOR(r, x ^ (unsigned int)(i * 0x11111111u));
+            }
+            k8_sink_ns::k8_sink[(SEED >> 18)&63u] += r;
+            _obf_global_opaque_seed = OBF_MBA_ADD(_obf_global_opaque_seed, (int)r);
+        }
+
+        template<unsigned int SEED>
+        K8_NOINLINE static void k8_fake_bubble_sort() {
+            volatile unsigned int arr[6]={
+                K8_SC<SEED,0x31415926u>::value, K8_SC<SEED,0x27182818u>::value,
+                K8_SC<SEED,0x16180339u>::value, K8_SC<SEED,0x14142135u>::value,
+                K8_SC<SEED,0x17320508u>::value, K8_SC<SEED,0x26457513u>::value
+            };
+            for(int i = 0; i < 5; ++i)
+                for(int j = 0; j < 5 - i; ++j)
+                    if(arr[j] > arr[j + 1])
+                    {
+                        unsigned int t = arr[j];
+                        arr[j] = arr[j + 1];
+                        arr[j + 1] = t;
+                    }
+            k8_sink_ns::k8_sink[(SEED >> 22) & 63u] ^= arr[0] ^ arr[5];
+            _obf_global_opaque_seed = OBF_MBA_XOR(_obf_global_opaque_seed, (int)(arr[0] ^ arr[5]));
+        }
+
+        template<unsigned int SEED>
+        K8_NOINLINE static void k8_fake_base64_enc() {
+            static const char _b64[] = 
+                "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
+            volatile unsigned int in = K8_SC<SEED, 0xFEEDFACEu>::value;
+            volatile char out[5] = {0};
+            out[0]= _b64[(in >> 18) & 0x3Fu];
+            out[1] = _b64[(in >> 12) & 0x3Fu];
+            out[2] = _b64[(in >> 6) & 0x3Fu];
+            out[3] = _b64[in & 0x3Fu];
+            k8_sink_ns::k8_sink[(SEED >> 5) & 63u] ^= (unsigned int)out[0] ^ (unsigned int)out[3];
+            _obf_global_opaque_seed = OBF_MBA_ADD(_obf_global_opaque_seed, (int)out[0] ^ (int)out[3]);
+        }
+
+        template<unsigned int SEED>
+        K8_NOINLINE static void k8_fake_entropy_mix() {
+            constexpr unsigned int _c0 = K8_SC<SEED,0x9E3779B1u>::value;
+            constexpr unsigned int _c1 = K8_SC<SEED,0x6C62272Eu>::value;
+            volatile uint64_t tsc = __rdtsc();
+            volatile unsigned int t0 = (unsigned int)(tsc & 0xFFFFFFFFu);
+            volatile unsigned int t1 = (unsigned int)(tsc >> 32);
+            volatile unsigned int add_part = OBF_MBA_ADD(_c0, t0);
+            volatile unsigned int mul_part = OBF_MBA_MUL_CONST3(t1 ^ _c1);
+            volatile unsigned int mix = OBF_MBA_XOR(add_part, mul_part);
+            k8_sink_ns::k8_sink[(SEED >> 7) & 63u] ^= mix;
+            _obf_global_opaque_seed = OBF_MBA_XOR(_obf_global_opaque_seed, (int)mix);
+        }
+
+        template<unsigned int SEED>
+        K8_NOINLINE static void k8_fake_crypt_stream() {
+            volatile unsigned int s[4]={
+                K8_SC<SEED,0x61707865u>::value, K8_SC<SEED,0x3320646Eu>::value,
+                K8_SC<SEED,0x79622D32u>::value, K8_SC<SEED,0x6B206574u>::value
+            };
+            for(int r = 0; r < 4; ++r){
+                s[0]+=s[1]; s[3]^=s[0]; s[3]=(s[3]<<16)|(s[3]>>16);
+                s[2]+=s[3]; s[1]^=s[2]; s[1]=(s[1]<<12)|(s[1]>>20);
+                s[0]+=s[1]; s[3]^=s[0]; s[3]=(s[3]<<8)|(s[3]>>24);
+                s[2]+=s[3]; s[1]^=s[2]; s[1]=(s[1]<<7)|(s[1]>>25);
+            }
+            k8_sink_ns::k8_sink[(SEED>>10)&63u]+=s[0]^s[3];
+            _obf_global_opaque_seed=OBF_MBA_XOR(_obf_global_opaque_seed,(int)(s[0]^s[3]));
+        }
+
+        template<unsigned int SEED>
+        K8_NOINLINE static void k8_fake_vm_dispatch() {
+            volatile unsigned int ip = K8_SC<SEED, 0u>::value&0xFu;
+            volatile unsigned int regs[4] = {K8_SC<SEED, 1u>::value, K8_SC<SEED, 2u>::value,
+                                           K8_SC<SEED, 3u>::value, K8_SC<SEED,4u>::value};
+            static const unsigned int prog[16]={
+                0x01230000u,0x12300001u,0x23010002u,0x30120003u,
+                0x01230004u,0x12300005u,0x23010006u,0x30120007u,
+                0x01230008u,0x12300009u,0x2301000Au,0x3012000Bu,
+                0x0123000Cu,0x1230000Du,0x2301000Eu,0x3012000Fu
+            };
+            for(int i = 0; i < 8; ++i){
+                unsigned int instr = prog[ip & 0xFu];
+                unsigned int op = (instr >> 24) & 0xFFu;
+                unsigned int rd = (instr >> 16) & 0x3u;
+                unsigned int rs = (instr >> 8) & 0x3u;
+                switch(op & 3u)
+                {
+                    case 0: regs[rd] = OBF_MBA_ADD(regs[rd], regs[rs]);
+                        break;
+                    case 1: regs[rd] = OBF_MBA_XOR(regs[rd], regs[rs]);
+                        break;
+                    case 2: regs[rd] = OBF_MBA_SUB(regs[rd], regs[rs]);
+                        break;
+                    default:regs[rd] = OBF_MBA_NOT(regs[rd] ^ regs[rs]);
+                        break;
+                }
+                ip = (ip + 1u) & 0xFu;
+            }
+            k8_sink_ns::k8_sink[(SEED >> 13) & 63u] ^= regs[0] ^ regs[3];
+            _obf_global_opaque_seed = OBF_MBA_XOR(_obf_global_opaque_seed, (int)(regs[0] ^ regs[3]));
+        }
+
+        template<unsigned int SEED, unsigned int BODY_IDX>
+        struct K8_FakeBodyDispatch {
+            K8_NOINLINE static void run() {
+                k8_fake_fnv1a<SEED>();
+            }
+        };
+        template<unsigned int S> struct K8_FakeBodyDispatch<S,0>  { K8_NOINLINE static void run(){k8_fake_rc4_sched<S>();} };
+        template<unsigned int S> struct K8_FakeBodyDispatch<S,1>  { K8_NOINLINE static void run(){k8_fake_murmur3<S>();} };
+        template<unsigned int S> struct K8_FakeBodyDispatch<S,2>  { K8_NOINLINE static void run(){k8_fake_fnv1a<S>();} };
+        template<unsigned int S> struct K8_FakeBodyDispatch<S,3>  { K8_NOINLINE static void run(){k8_fake_crc32<S>();} };
+        template<unsigned int S> struct K8_FakeBodyDispatch<S,4>  { K8_NOINLINE static void run(){k8_fake_aes_sbox<S>();} };
+        template<unsigned int S> struct K8_FakeBodyDispatch<S,5>  { K8_NOINLINE static void run(){k8_fake_str_scan<S>();} };
+        template<unsigned int S> struct K8_FakeBodyDispatch<S,6>  { K8_NOINLINE static void run(){k8_fake_bitpack<S>();} };
+        template<unsigned int S> struct K8_FakeBodyDispatch<S,7>  { K8_NOINLINE static void run(){k8_fake_memchk<S>();} };
+        template<unsigned int S> struct K8_FakeBodyDispatch<S,8>  { K8_NOINLINE static void run(){k8_fake_lfsr<S>();} };
+        template<unsigned int S> struct K8_FakeBodyDispatch<S,9>  { K8_NOINLINE static void run(){k8_fake_wang<S>();} };
+        template<unsigned int S> struct K8_FakeBodyDispatch<S,10> { K8_NOINLINE static void run(){k8_fake_rol_chain<S>();} };
+        template<unsigned int S> struct K8_FakeBodyDispatch<S,11> { K8_NOINLINE static void run(){k8_fake_xor_ladder<S>();} };
+        template<unsigned int S> struct K8_FakeBodyDispatch<S,12> { K8_NOINLINE static void run(){k8_fake_matrix_mul<S>();} };
+        template<unsigned int S> struct K8_FakeBodyDispatch<S,13> { K8_NOINLINE static void run(){k8_fake_poly_eval<S>();} };
+        template<unsigned int S> struct K8_FakeBodyDispatch<S,14> { K8_NOINLINE static void run(){k8_fake_bubble_sort<S>();} };
+        template<unsigned int S> struct K8_FakeBodyDispatch<S,15> { K8_NOINLINE static void run(){k8_fake_base64_enc<S>();} };
+        template<unsigned int S> struct K8_FakeBodyDispatch<S,16> { K8_NOINLINE static void run(){k8_fake_entropy_mix<S>();} };
+        template<unsigned int S> struct K8_FakeBodyDispatch<S,17> { K8_NOINLINE static void run(){k8_fake_crypt_stream<S>();} };
+        template<unsigned int S> struct K8_FakeBodyDispatch<S,18> { K8_NOINLINE static void run(){k8_fake_vm_dispatch<S>();} };
+        template<unsigned int S> struct K8_FakeBodyDispatch<S,19> { K8_NOINLINE static void run(){k8_fake_rol_chain<K8_XS32<S>::value>();} };
+
+        template<unsigned int SEED, int DEPTH>
+        struct K8_BBChain {
+            K8_NOINLINE static void run() {
+                constexpr unsigned int rot=(K8_SC<SEED,0x1Fu>::value&0x1Fu)+1u;
+                volatile unsigned long long junk=
+                    (K8_SC<SEED,0x12345678u>::value^(unsigned)_obf_global_opaque_seed)
+                    *K8_SC<SEED,0x9E3779B1u>::value;
+                junk= (junk << rot) | (junk >> (32u - rot));
+                _obf_global_opaque_seed = OBF_MBA_XOR(_obf_global_opaque_seed, (long long)junk ^ (long long)__LINE__);
+                (void)junk;
+                typedef void(*fn_t)();
+                volatile fn_t next = K8_BBChain<K8_XS32<SEED>::value, DEPTH - 1>::run;
+                uintptr_t k2 = (uintptr_t)K8_SC<SEED,0xABCD0000u>::value^(uintptr_t)__LINE__;
+                next = (fn_t)((uintptr_t)next ^ k2);
+                next = (fn_t)((uintptr_t)next ^ k2);
+                next();
+            }
+        };
+        template<unsigned int SEED>
+        struct K8_BBChain<SEED, 0> {
+            K8_NOINLINE static void run() {
+                K8_FakeBodyDispatch<SEED, K8_SC<SEED, 0u>::value % 20u>::run();
+            }
+        };
+
+        namespace k8_autospawn_ns {
+            static constexpr unsigned int _base =
+                30u + (
+                    (unsigned int)(__TIME__[0]-'0')*10u +
+                    (unsigned int)(__TIME__[1]-'0')*5u  +
+                    (unsigned int)(__TIME__[6]-'0')*3u  +
+                    (unsigned int)(__TIME__[7]-'0')
+                ) % 51u;
+
+            static constexpr unsigned int _seed0 =
+                ((unsigned int)(__TIME__[0])<<24) |
+                ((unsigned int)(__TIME__[3])<<16) |
+                ((unsigned int)(__TIME__[6])<<8)  |
+                 (unsigned int)(__TIME__[7]);
+
+            template<unsigned int SEED, unsigned int N>
+            struct Spawner {
+                static void run() {
+                    constexpr int depth=(int)((SEED%5u)+2u);
+                    K8_BBChain<SEED, depth>::run();
+                    typedef void(*fn_t)();
+                    volatile fn_t next_spawn=Spawner<K8_XS32<SEED>::value,N-1>::run;
+                    uintptr_t k3=(uintptr_t)SEED^(uintptr_t)__LINE__;
+                    next_spawn=(fn_t)((uintptr_t)next_spawn^k3);
+                    next_spawn=(fn_t)((uintptr_t)next_spawn^k3);
+                    next_spawn();
+                }
+            };
+            template<unsigned int SEED>
+            struct Spawner<SEED,0> {
+                static void run() {
+                    K8_BBChain<SEED,2>::run();
+                }
+            };
+        }
+
+        #define K8_AUTOSPAWN() \
+            do { \
+                typedef void(*_asf_t)(); \
+                volatile _asf_t _asf = \
+                    k8_autospawn_ns::Spawner< \
+                        k8_autospawn_ns::_seed0, \
+                        k8_autospawn_ns::_base>::run; \
+                uintptr_t _ask=(uintptr_t)__LINE__^(uintptr_t)_obf_global_opaque_seed; \
+                _asf=(_asf_t)((uintptr_t)_asf^_ask); \
+                _asf=(_asf_t)((uintptr_t)_asf^_ask); \
+                _asf(); \
+                _obf_global_opaque_seed=OBF_MBA_XOR(_obf_global_opaque_seed, \
+                    (int)k8_sink_ns::k8_sink[0]^(int)k8_sink_ns::k8_sink[63]); \
+            } while(0)
+
+        #define K8_SPAWN_IMPL(depth, seed, body) \
+            do { \
+                auto CONCAT(_k8sp_lam_,seed) = [](){body}; \
+                typedef void(*CONCAT(_k8sp_fp_, seed))(); \
+                volatile CONCAT(_k8sp_fp_, seed) CONCAT(_k8sp_fn_, seed)= \
+                    (CONCAT(_k8sp_fp_, seed))(CONCAT(_k8sp_lam_, seed)); \
+                K8_BBChain<(unsigned int)(seed) * 0x9E3779B1u + 0xDEADBEEFu, depth>::run(); \
+                CONCAT(_k8sp_fn_, seed)(); \
+            } while(0)
+        #define K8_SPAWN(depth,id,body) K8_SPAWN_IMPL(depth,__COUNTER__,body)
+
+        #define K8_BB_LIGHT(id,body)   K8_SPAWN(3, id, body)
+        #define K8_BB_MEDIUM(id,body)  K8_SPAWN(7, id, body)
+        #define K8_BB_HEAVY(id,body)   K8_SPAWN(15,id, body)
+
+        #define K8_FUNC_FACTORY(ret_type, func_name, params, depth, body) \
+            namespace CONCAT(_k8ff_ns_, func_name){ \
+                K8_NOINLINE static ret_type _core params{body} \
+                template<unsigned int SEED, int D> struct _L{ \
+                    K8_NOINLINE static ret_type run params{ \
+                        constexpr unsigned int _rot = (K8_SC<SEED,0x1Fu>::value&0x1Fu)+1u; \
+                        volatile unsigned int _jk = K8_SC<SEED,0xABCDEF01u>::value \
+                            ^(unsigned)_obf_global_opaque_seed; \
+                        _jk = (_jk<<_rot)|(_jk>>(32u-_rot)); \
+                        _obf_global_opaque_seed = OBF_MBA_XOR( \
+                            _obf_global_opaque_seed, (int)_jk ^ (int)__LINE__); \
+                        (void)_jk; \
+                        typedef ret_type(*_nfp_t)params; \
+                        volatile _nfp_t _nf = _L<K8_XS32<SEED>::value,D-1>::run; \
+                        uintptr_t _k=(uintptr_t)K8_SC<SEED, 0xFEED0000u>::value \
+                                    ^(uintptr_t)_AddressOfReturnAddress(); \
+                        _nf = (_nfp_t)((uintptr_t)_nf ^ _k); \
+                        _nf = (_nfp_t)((uintptr_t)_nf ^ _k); \
+                        return _nf params; \
+                    } \
+                }; \
+                template<unsigned int SEED> struct _L<SEED,0>{ \
+                    K8_NOINLINE static ret_type run params{return _core params;} \
+                }; \
+            } \
+            K8_NOINLINE static ret_type func_name params{ \
+                return CONCAT(_k8ff_ns_,func_name)::_L< \
+                    (unsigned int)(__LINE__*0x9E3779B1u)^0xDEADBEEFu, \
+                    depth>::run params; \
+            }
+
+        #define K8_STD_FUNC_BB_IMPL(body, _id) \
+            do { \
+                function<void()> CONCAT(_k8sf_fn_,_id) = [&]() { body }; \
+                uintptr_t CONCAT(_k8sf_noise_,_id) = \
+                    (uintptr_t)_AddressOfReturnAddress() & 0xFFFFu; \
+                _obf_global_opaque_seed = OBF_MBA_XOR(_obf_global_opaque_seed, \
+                    (int)CONCAT(_k8sf_noise_,_id) ^ (int)__LINE__); \
+                volatile uintptr_t CONCAT(_k8sf_vaddr_,_id) = \
+                    (uintptr_t)&CONCAT(_k8sf_fn_,_id); \
+                function<void()>* CONCAT(_k8sf_vp_,_id) = \
+                    (function<void()>*)(uintptr_t)CONCAT(_k8sf_vaddr_,_id); \
+                (*CONCAT(_k8sf_vp_,_id))(); \
+            } while(0)
+        #define K8_STD_FUNC_BB(body) K8_STD_FUNC_BB_IMPL(body, __COUNTER__)
+
     #pragma endregion JUNK
     
     #pragma region OBF_JUMPS
-    // --------------------------------------
-    
-        // --- Anti-Disassembly Jump Instructions ---
-        // --- Jump Instructions with the Same Target ---
-        // These will always jump to TARGET_LABEL, but through obfuscated means
         #define OBF_JUMP_SKEW_1(TARGET_LABEL) \
             do { \
                 NOP(); \
@@ -452,12 +1001,7 @@ NOOPT
                 } \
                 K8_ASSUME(0); \
             } while(0)
-    
-    
-    
-        // --- Jump Instructions with a Constant Condition ---
-        // These will use opaque predicates to determine if the jump to TARGET_LABEL occurs
-        // FALLTHROUGH_CODE_BLOCK will be executed if the jump is NOT taken (predicate is false).
+
         #define OBF_JUMP_CONST_COND_TRUE_1(TARGET_LABEL, FALLTHROUGH_CODE_BLOCK) \
             do { \
                 volatile int _cc_val1 = OBF_MBA_ADD(__COUNTER__, _obf_global_opaque_seed); \
@@ -538,13 +1082,7 @@ NOOPT
                                     DEAD_CODE_TARGET_BLOCK
                                 };
         }
-    
-        // --- Anti-Disassembly State Transition ---
-        // Shared next_state_var_name will be passed to these.
-        // Example: OBF_SET_NEXT_STATE_SKEW_1(DispatchBlockID::SOME_TARGET, local_next_state_var);
-    
-        // --- Unconditional State Transitions ---
-        // These will always set next_state_var_name to TARGET_BLOCK_ID
+
         #define OBF_SET_NEXT_STATE_SKEW_1(TARGET_BLOCK_ID, next_state_var_name) \
             do { \
                 NOP(); \
@@ -604,11 +1142,7 @@ NOOPT
     
         #define OBF_SET_NEXT_STATE_SKEW_10(TARGET_BLOCK_ID, next_state_var_name) \
             OBF_SET_NEXT_STATE_SKEW_2(TARGET_BLOCK_ID, next_state_var_name)
-    
-    
-        // --- Conditional State Transitions ---
-        // These will use opaque predicates to determine if next_state_var_name is set to
-        // TARGET_BLOCK_ID_IF_TRUE or TARGET_BLOCK_ID_IF_FALSE
+
         #define OBF_SET_NEXT_STATE_CONST_COND_TRUE_1(TARGET_BLOCK_ID_IF_TRUE, TARGET_BLOCK_ID_IF_FALSE, next_state_var_name) \
             do { \
                 volatile int _cc_val1 = OBF_MBA_ADD(__COUNTER__, _obf_global_opaque_seed); \
@@ -673,119 +1207,220 @@ NOOPT
                 #define VM_OPQ_TRUE()   (((((unsigned int)(__LINE__ ^ _obf_global_opaque_seed)) | 1u) & 1u) == 1u)
                 #define VM_OPQ_FALSE()  ((((unsigned int)(__LINE__ ^ _obf_global_opaque_seed)) & 1u) == 0u && 0)
     
+                K8_FORCEINLINE static uint32_t _k8_self_crc(const void* fn) {
+                    volatile uint32_t c = 0xFFFFFFFFu;
+                    const uint8_t* p = (const uint8_t*)(uintptr_t)fn;
+                    for (int i = 0; i < 32; ++i) {
+                        c ^= p[i];
+                        for (int b = 0; b < 8; ++b)
+                            c = (c >> 1) ^ (0xEDB88320u & (uint32_t)(0u - (c & 1u)));
+                    }
+                    return (c ^ 0xFFFFFFFFu) ^ (uint32_t)((uintptr_t)fn & 0xFFFFu);
+                }
+
+                K8_FORCEINLINE static uint32_t _k8_rk(
+                        uint32_t dk, uint32_t crc, const void* fn) {
+                    volatile uint64_t tsc = __rdtsc();
+                    volatile uint32_t tlo = (uint32_t)(tsc & 0xFFFFu);
+                    volatile uint32_t sp  = (uint32_t)(
+                        (uintptr_t)_AddressOfReturnAddress() & 0xFFFFu);
+                    return (uint32_t)OBF_MBA_XOR(
+                               (uint32_t)OBF_MBA_ADD(dk ^ crc, tlo ^ sp),
+                               (uint32_t)((uintptr_t)fn & 0xFFFFu));
+                }
+
+                #define K8_DPSEL(cond, a, b) \
+                    ((unsigned int)OBF_MBA_ADD( \
+                        (unsigned int)(a) & (unsigned int)(0u-((unsigned int)((cond)!=0u))), \
+                        (unsigned int)(b) & (unsigned int)(0u-((unsigned int)((cond)==0u)))))
+
                 K8_NOINLINE static void vm_handle_op_arith(VMState& s, int ac, char** av) {
+                    volatile uint32_t _crc = _k8_self_crc((void*)vm_handle_op_arith);
+                    volatile uint32_t _rk  = _k8_rk(s.dispatch_key,_crc,(void*)vm_handle_op_arith);
+                    volatile unsigned int _i0 = (unsigned int)OBF_MBA_XOR(0x1A2B3C4Du, _rk);
+                    volatile unsigned int _i1 = (unsigned int)OBF_MBA_XOR(0xDEADF00Du, _rk ^ _crc);
                     NOP();
-                    unsigned int tmp = OBF_MBA_XOR(s.r1, (unsigned int)(__LINE__));
-                    tmp = OBF_MBA_ADD(tmp, s.global_seed_ref ^ s.pc);
-                    s.r0 = OBF_MBA_ADD(s.r0, tmp);
-                    s.r1 = OBF_MBA_SUB(s.r1, (s.r2 + (unsigned int)ac + (s.pc * 7U)) ^ OBF_CALL_ANY_LOCAL_JUNK());
-                    s.r2 = OBF_MBA_XOR(s.r2, s.dispatch_key ^ (unsigned int)(av && ac > 0 && av[0] ? (std::uintptr_t)av[0] : __COUNTER__));
-                    s.dispatch_key = OBF_MBA_ADD(s.dispatch_key, s.r0 ^ 0x1A2B3C4DU ^ s.r1);
-                    s.pc = OBF_MBA_ADD(s.pc, 1U ^ (s.r2 & 1U));
-                    s.global_seed_ref = OBF_MBA_XOR(s.global_seed_ref, (int)(s.r0 ^ s.r1 ^ s.pc));
-                    if (VM_OPQ_TRUE() || VM_OPQ_FALSE()) { OBF_CALL_ANY_LOCAL_JUNK(); }
+                    unsigned int tmp = (unsigned int)OBF_MBA_XOR(s.r1,(unsigned int)__LINE__);
+                    tmp = (unsigned int)OBF_MBA_ADD(tmp, (unsigned int)s.global_seed_ref ^ s.pc ^ _rk);
+                    tmp = (unsigned int)OBF_MBA_XOR(tmp, _i0 ^ _crc);
+                    s.r0 = (unsigned int)OBF_MBA_ADD(s.r0, tmp);
+                    unsigned int _p0 = (unsigned int)OBF_MBA_SUB(s.r1,
+                        (s.r2 + (unsigned int)ac+(s.pc*7u))^(unsigned int)OBF_CALL_ANY_LOCAL_JUNK()^_i1);
+                    unsigned int _p1 = (unsigned int)OBF_MBA_SUB(s.r1,
+                        (s.r2 + (unsigned int)ac+(s.pc*7u))^(unsigned int)OBF_CALL_ANY_LOCAL_JUNK()^_i1);
+                    s.r1 = K8_DPSEL(s.dispatch_key & 1u,_p0,_p1);
+                    s.r2 = (unsigned int)OBF_MBA_XOR(s.r2, s.dispatch_key ^
+                        (unsigned int)(av && ac > 0 && av[0] ? (uintptr_t)av[0] : (uintptr_t)__COUNTER__));
+                    s.dispatch_key = (unsigned int)OBF_MBA_ADD(s.dispatch_key,
+                        (unsigned int)OBF_MBA_XOR(s.r0 ^ _i0, s.r1 ^ _crc));
+                    s.pc = (unsigned int)OBF_MBA_ADD(s.pc, 1u ^ (s.r2 & 1u));
+                    s.global_seed_ref = (int)OBF_MBA_XOR(s.global_seed_ref,
+                        (int)(s.r0 ^ s.r1 ^ s.pc ^ _crc ^ _rk));
+                    if(VM_OPQ_TRUE() || VM_OPQ_FALSE())
+                        OBF_CALL_ANY_LOCAL_JUNK();
                 }
-    
+
                 K8_NOINLINE static void vm_handle_op_bitwise_logic(VMState& s, int ac, char** av) {
+                    volatile uint32_t _crc = _k8_self_crc((void*)vm_handle_op_bitwise_logic);
+                    volatile uint32_t _rk  = _k8_rk(s.dispatch_key,_crc,(void*)vm_handle_op_bitwise_logic);
+                    volatile unsigned int _i0 = (unsigned int)OBF_MBA_XOR(0xDEADBEEFu,_rk);
+                    volatile unsigned int _i1 = (unsigned int)OBF_MBA_XOR(0xCAFEFACEu,_rk^_crc);
                     NOP();
-                    s.r0 = OBF_MBA_XOR((s.r0 & s.r1) | (OBF_MBA_NOT(s.r0) & s.r2), (s.r1 ^ s.r2));
-                    s.r1 = (s.r1 << ((s.pc % 3) + 1)) | (s.r1 >> (32 - ((s.pc % 3) + 1)));
-                    if (OBF_OPAQUE_PREDICATE_TRUE_1()) {
-                        s.r2 = OBF_MBA_XOR(s.r2, 0xDEADBEEFU + (unsigned int)s.global_seed_ref);
-                    } else {
-                        s.r2 = OBF_MBA_ADD(s.r2, 0xCAFEFACU);
-                    }
-                    s.dispatch_key = OBF_MBA_SUB(s.dispatch_key, (s.r1 ^ 0x55AA55AAU) ^ s.r2);
-                    s.pc = OBF_MBA_ADD(s.pc, ((s.r0 & 1U) ? 2U : 1U) + ((s.r1 & 1U) ? 1U : 0U));
-                    s.global_seed_ref = OBF_MBA_ADD(s.global_seed_ref, (int)(s.r2 ^ s.dispatch_key ^ s.pc));
-                    if (VM_OPQ_TRUE() || VM_OPQ_FALSE()) { OBF_CALL_ANY_LOCAL_JUNK(); }
+                    s.r0 = (unsigned int)OBF_MBA_XOR(
+                        (s.r0 & s.r1)|((unsigned int)OBF_MBA_NOT(s.r0)&s.r2),
+                        (s.r1 ^ s.r2 ^_rk));
+                    unsigned int _rot=((s.pc % 3u) + 1u) ^ (_rk & 0x1Fu);
+                    _rot = (_rot % 31u) + 1u;
+                    unsigned int _r1a = (s.r1 << _rot) | (s.r1 >> (32u - _rot));
+                    unsigned int _r1b = (s.r1 << _rot) | (s.r1 >> (32u - _rot));
+                    s.r1 = K8_DPSEL(_crc & 1u, _r1a, _r1b);
+                    s.r2 = (unsigned int)OBF_MBA_XOR(s.r2,_i0^(unsigned int)s.global_seed_ref^_crc);
+                    s.dispatch_key = (unsigned int)OBF_MBA_SUB(s.dispatch_key,
+                        (s.r1 ^ (0x55AA55AAu ^ _rk)) ^ s.r2);
+                    s.pc = (unsigned int)OBF_MBA_ADD(s.pc, ((s.r0 & 1u) ? 2u : 1u) + ((s.r1 & 1u) ? 1u : 0u));
+                    s.global_seed_ref = (int)OBF_MBA_ADD(s.global_seed_ref,
+                        (int)(s.r2 ^ s.dispatch_key ^ s.pc ^ _i1 ^ _crc));
+                    if(VM_OPQ_TRUE() || VM_OPQ_FALSE())
+                        OBF_CALL_ANY_LOCAL_JUNK();
                 }
-    
+
                 K8_NOINLINE static void vm_handle_op_key_mangle(VMState& s, int ac, char** av) {
+                    volatile uint32_t _crc = _k8_self_crc((void*)vm_handle_op_key_mangle);
+                    volatile uint32_t _rk  = _k8_rk(s.dispatch_key,_crc,(void*)vm_handle_op_key_mangle);
+                    volatile unsigned int _i0 = (unsigned int)OBF_MBA_XOR(0xBEEFBABEu,_rk);
                     NOP();
-                    unsigned int temp_key = s.dispatch_key ^ (unsigned int)__LINE__;
-                    temp_key = OBF_MBA_MUL_CONST3(temp_key ^ (s.r0 | s.r1));
-                    temp_key = OBF_MBA_ADD(temp_key, s.r0 ^ s.r1 ^ s.r2 ^ s.pc);
-                    temp_key = (temp_key << ((s.global_seed_ref % 5) + 1)) | (temp_key >> (32 - ((s.global_seed_ref % 5) + 1)));
-                    temp_key ^= (unsigned int)OBF_CALL_ANY_LOCAL_JUNK();
-                    s.dispatch_key = temp_key;
-                    s.r0 = OBF_MBA_XOR(s.r0, s.dispatch_key ^ s.r2);
-                    s.pc = OBF_MBA_SUB(s.pc, (s.r1 & 7U) ? 1U : 3U);
-                    s.global_seed_ref = OBF_MBA_XOR(s.global_seed_ref, (int)s.dispatch_key ^ s.r2);
-                    if (VM_OPQ_TRUE() || VM_OPQ_FALSE()) { OBF_CALL_ANY_LOCAL_JUNK(); }
+                    unsigned int tk=s.dispatch_key^(unsigned int)__LINE__^_i0;
+                    tk=(unsigned int)OBF_MBA_MUL_CONST3(tk^(s.r0|s.r1)^_crc);
+                    tk=(unsigned int)OBF_MBA_ADD(tk,s.r0^s.r1^s.r2^s.pc^_rk);
+                    unsigned int _krot=(_crc>>8u)&0x1Fu;
+                    if(_krot==0u) _krot=7u;
+                    tk=(tk<<_krot)|(tk>>(32u-_krot));
+                    tk^=(unsigned int)OBF_CALL_ANY_LOCAL_JUNK()^_rk;
+                    s.dispatch_key=tk;
+                    s.r0 = (unsigned int)OBF_MBA_XOR(s.r0, s.dispatch_key ^ s.r2 ^ _i0);
+                    s.pc = (unsigned int)OBF_MBA_SUB(s.pc, (s.r1 & 7u) ? 1u : 3u);
+                    s.global_seed_ref=(int)OBF_MBA_XOR(s.global_seed_ref,
+                        (int)s.dispatch_key ^ (int)s.r2 ^ (int)_crc ^ (int)_rk);
+                    if(VM_OPQ_TRUE() || VM_OPQ_FALSE())
+                        OBF_CALL_ANY_LOCAL_JUNK();
                 }
-    
+
                 K8_NOINLINE static void vm_handle_op_junk_sequence(VMState& s, int ac, char** av) {
+                    volatile uint32_t _crc = _k8_self_crc((void*)vm_handle_op_junk_sequence);
+                    volatile uint32_t _rk  = _k8_rk(s.dispatch_key,_crc,(void*)vm_handle_op_junk_sequence);
+                    volatile unsigned int _i0 = (unsigned int)OBF_MBA_XOR(0xF00DFACEu,_rk^_crc);
                     NOP();
-                    s.r0 = OBF_MBA_ADD(s.r0, (unsigned int)OBF_CALL_ANY_LOCAL_JUNK() ^ s.r1);
-                    s.r1 = OBF_MBA_XOR(s.r1, (unsigned int)OBF_CALL_ANY_LOCAL_JUNK() ^ s.r2 ^ (unsigned int)ac);
-                    s.r2 = OBF_MBA_SUB(s.r2, (unsigned int)OBF_CALL_ANY_LOCAL_JUNK() ^ (unsigned int)(av && ac > 0 && av[0] ? av[0][0] : __LINE__));
-                    s.dispatch_key = OBF_MBA_NOT(s.dispatch_key ^ s.r0 ^ s.r2);
-                    s.pc = OBF_MBA_ADD(s.pc, 1U + (s.r2 & 3U));
-                    s.global_seed_ref = OBF_MBA_XOR(s.global_seed_ref, (int)(s.r0 ^ s.r1 ^ s.r2 ^ s.pc));
-                    if (VM_OPQ_TRUE() || VM_OPQ_FALSE()) { OBF_CALL_ANY_LOCAL_JUNK(); }
+                    s.r0=(unsigned int)OBF_MBA_ADD(s.r0,
+                        (unsigned int)OBF_CALL_ANY_LOCAL_JUNK()^s.r1^_rk);
+                    s.r1=(unsigned int)OBF_MBA_XOR(s.r1,
+                        (unsigned int)OBF_CALL_ANY_LOCAL_JUNK()^s.r2^(unsigned int)ac^_i0);
+                    s.r2=(unsigned int)OBF_MBA_SUB(s.r2,
+                        (unsigned int)OBF_CALL_ANY_LOCAL_JUNK()^
+                        (unsigned int)(av&&ac>0&&av[0]?av[0][0]:(char)__LINE__)^_crc);
+                    s.dispatch_key=(unsigned int)OBF_MBA_NOT(s.dispatch_key^s.r0^s.r2^_rk);
+                    s.pc=(unsigned int)OBF_MBA_ADD(s.pc,1u+(s.r2&3u));
+                    s.global_seed_ref=(int)OBF_MBA_XOR(s.global_seed_ref,
+                        (int)(s.r0^s.r1^s.r2^s.pc^_i0^_crc));
+                    if(VM_OPQ_TRUE()||VM_OPQ_FALSE()) OBF_CALL_ANY_LOCAL_JUNK();
                     NOP();
                 }
-    
+
                 K8_NOINLINE static void vm_handle_op_conditional_update(VMState& s, int ac, char** av) {
+                    volatile uint32_t _crc = _k8_self_crc((void*)vm_handle_op_conditional_update);
+                    volatile uint32_t _rk  = _k8_rk(s.dispatch_key,_crc,(void*)vm_handle_op_conditional_update);
+                    volatile unsigned int _i0 = (unsigned int)OBF_MBA_XOR(0xBAD0C0DEu,_rk);
+                    volatile unsigned int _i1 = (unsigned int)OBF_MBA_XOR(0xC001F00Du,_rk^_crc);
                     NOP();
-                    if (OBF_OPAQUE_PREDICATE_TRUE_2(s.r0 ^ s.dispatch_key ^ (unsigned int)s.global_seed_ref)) {
-                        s.r0 = OBF_MBA_ADD(s.r0, s.r1 ^ (s.pc | 0xA5A5U));
-                        s.r1 = OBF_MBA_SUB(s.r1, s.r2 ^ (s.pc & 0x5A5AU));
-                        s.dispatch_key = OBF_MBA_XOR(s.dispatch_key, (s.pc * 0x1001U) ^ s.r1);
+                    volatile unsigned int _pred=(unsigned int)OBF_MBA_XOR(
+                        s.r0^s.dispatch_key^(unsigned int)s.global_seed_ref,_rk);
+                    if(OBF_OPAQUE_PREDICATE_TRUE_2(_pred)) {
+                        s.r0=(unsigned int)OBF_MBA_ADD(s.r0,s.r1^(s.pc|(0xA5A5u^_i0)));
+                        s.r1=(unsigned int)OBF_MBA_SUB(s.r1,s.r2^(s.pc&(0x5A5Au^_i1)));
+                        s.dispatch_key=(unsigned int)OBF_MBA_XOR(s.dispatch_key,
+                            (s.pc*0x1001u)^s.r1^_crc);
                     } else {
-                        s.r0 = OBF_MBA_XOR(s.r0, 0xBAD0BAD0U ^ s.r2);
-                        s.r1 = OBF_MBA_NOT(s.r1 ^ s.r0);
-                        s.dispatch_key = OBF_MBA_ADD(s.dispatch_key, 0xC001C001U ^ s.r0);
+                        s.r0=(unsigned int)OBF_MBA_XOR(s.r0,(_i0^0xBAD0BAD0u)^s.r2);
+                        s.r1=(unsigned int)OBF_MBA_NOT(s.r1^s.r0^_rk);
+                        s.dispatch_key=(unsigned int)OBF_MBA_ADD(s.dispatch_key,
+                            (_i1^0xC001C001u)^s.r0);
                     }
-                    s.r2 = OBF_MBA_XOR(s.r2, (unsigned int)OBF_CALL_ANY_LOCAL_JUNK() ^ s.r0);
-                    s.pc = OBF_MBA_ADD(s.pc, ((s.r1 & 1U) + 1U) ^ (s.r2 & 3U));
-                    s.global_seed_ref = OBF_MBA_SUB(s.global_seed_ref, (int)(s.r0 + s.r1 + s.pc));
-                    if (VM_OPQ_TRUE() || VM_OPQ_FALSE()) { OBF_CALL_ANY_LOCAL_JUNK(); }
+                    s.r2=(unsigned int)OBF_MBA_XOR(s.r2,
+                        (unsigned int)OBF_CALL_ANY_LOCAL_JUNK()^s.r0^_i0);
+                    s.pc=(unsigned int)OBF_MBA_ADD(s.pc,((s.r1&1u)+1u)^(s.r2&3u));
+                    s.global_seed_ref=(int)OBF_MBA_SUB(s.global_seed_ref,
+                        (int)(s.r0+s.r1+s.pc+_crc+_rk));
+                    if(VM_OPQ_TRUE()||VM_OPQ_FALSE())
+                        OBF_CALL_ANY_LOCAL_JUNK();
                 }
-    
+
                 K8_NOINLINE static void vm_handle_op_mem_sim(VMState& s, int ac, char** av) {
+                    volatile uint32_t _crc = _k8_self_crc((void*)vm_handle_op_mem_sim);
+                    volatile uint32_t _rk  = _k8_rk(s.dispatch_key,_crc,(void*)vm_handle_op_mem_sim);
+                    volatile unsigned int _i0 = (unsigned int)OBF_MBA_XOR(0xFEEDBEEFu,_rk);
                     NOP();
-                    static unsigned int obf_vm_memory[32];
-                    unsigned int addr1 = (s.r0 ^ s.pc ^ s.dispatch_key) % 32;
-                    unsigned int addr2 = (s.r1 ^ s.dispatch_key ^ s.r2) % 32;
-                    if (OBF_OPAQUE_PREDICATE_TRUE_1()) { obf_vm_memory[addr1] = OBF_MBA_ADD(s.r2, s.dispatch_key ^ (s.r1 & 0xAA55U)); }
-                    if (VM_OPQ_TRUE() || VM_OPQ_FALSE()) { obf_vm_memory[addr2] = OBF_MBA_XOR(s.r0, s.r1 ^ (unsigned int)OBF_CALL_ANY_LOCAL_JUNK()); }
-                    s.r0 = OBF_MBA_XOR(s.r0, obf_vm_memory[addr2]);
-                    s.r1 = OBF_MBA_ADD(s.r1, obf_vm_memory[addr1 % 8] ^ s.r2);
-                    s.dispatch_key = OBF_MBA_SUB(s.dispatch_key, obf_vm_memory[(addr1 + addr2) % 32]);
-                    s.pc = OBF_MBA_ADD(s.pc, 1U ^ (s.dispatch_key & 1U));
-                    s.global_seed_ref = OBF_MBA_XOR(s.global_seed_ref, (int)obf_vm_memory[s.pc % 32]);
-                    if (VM_OPQ_TRUE() || VM_OPQ_FALSE()) { OBF_CALL_ANY_LOCAL_JUNK(); }
+                    static volatile unsigned int _mem[32];
+                    unsigned int a1=(s.r0^s.pc^s.dispatch_key^_rk)%32u;
+                    unsigned int a2=(s.r1^s.dispatch_key^s.r2^_crc)%32u;
+                    if(OBF_OPAQUE_PREDICATE_TRUE_1())
+                        _mem[a1]=(unsigned int)OBF_MBA_ADD(s.r2,
+                            s.dispatch_key^(s.r1&0xAA55u)^_i0);
+                    if(VM_OPQ_TRUE()||VM_OPQ_FALSE())
+                        _mem[a2]=(unsigned int)OBF_MBA_XOR(s.r0,
+                            s.r1^(unsigned int)OBF_CALL_ANY_LOCAL_JUNK()^_rk);
+                    unsigned int _ma=a2^(_rk&0u);
+                    unsigned int _mb=a2^(_crc&0u);
+                    s.r0=(unsigned int)OBF_MBA_XOR(s.r0,K8_DPSEL(_crc&1u,_mem[_ma],_mem[_mb]));
+                    s.r1=(unsigned int)OBF_MBA_ADD(s.r1,_mem[a1%8u]^s.r2^_rk);
+                    s.dispatch_key=(unsigned int)OBF_MBA_SUB(s.dispatch_key,
+                        _mem[(a1+a2)%32u]^_i0);
+                    s.pc=(unsigned int)OBF_MBA_ADD(s.pc,1u^(s.dispatch_key&1u));
+                    s.global_seed_ref=(int)OBF_MBA_XOR(s.global_seed_ref,
+                        (int)(_mem[s.pc%32u]^_crc^_rk));
+                    if(VM_OPQ_TRUE()||VM_OPQ_FALSE()) OBF_CALL_ANY_LOCAL_JUNK();
                 }
-    
+
                 K8_NOINLINE static void vm_handle_op_pc_mangle(VMState& s, int ac, char** av) {
+                    volatile uint32_t _crc = _k8_self_crc((void*)vm_handle_op_pc_mangle);
+                    volatile uint32_t _rk  = _k8_rk(s.dispatch_key,_crc,(void*)vm_handle_op_pc_mangle);
+                    volatile unsigned int _i0 = (unsigned int)OBF_MBA_XOR(0xC0DE1337u,_rk^_crc);
                     NOP();
-                    s.pc = OBF_MBA_XOR(s.pc, s.r0 ^ s.r1 ^ s.dispatch_key ^ s.r2);
-                    s.pc = OBF_MBA_ADD(s.pc, (unsigned int)__LINE__ + (s.dispatch_key & 0x3F));
-                    s.pc %= 256;
-                    s.r0 = OBF_MBA_ADD(s.r0, s.pc ^ (s.r1 & 0xF0F0U));
-                    s.dispatch_key = OBF_MBA_NOT(s.dispatch_key ^ s.pc);
-                    s.global_seed_ref = OBF_MBA_ADD(s.global_seed_ref, (int)s.pc ^ (int)OBF_CALL_ANY_LOCAL_JUNK());
-                    if (!OBF_OPAQUE_PREDICATE_FALSE_1()) { s.r1 = OBF_MBA_XOR(s.r1, (unsigned int)OBF_CALL_ANY_LOCAL_JUNK() ^ s.r2); }
+                    s.pc=(unsigned int)OBF_MBA_XOR(s.pc,s.r0^s.r1^s.dispatch_key^s.r2^_rk);
+                    s.pc=(unsigned int)OBF_MBA_ADD(s.pc,
+                        (unsigned int)__LINE__+(s.dispatch_key&0x3Fu)+(_i0&0u));
+                    s.pc=(unsigned int)(s.pc%256u);
+                    s.r0=(unsigned int)OBF_MBA_ADD(s.r0,s.pc^(s.r1&0xF0F0u)^_crc);
+                    s.dispatch_key=(unsigned int)OBF_MBA_NOT(s.dispatch_key^s.pc^_rk);
+                    s.global_seed_ref=(int)OBF_MBA_ADD(s.global_seed_ref,
+                        (int)s.pc^(int)OBF_CALL_ANY_LOCAL_JUNK()^(int)_i0);
+                    if(!OBF_OPAQUE_PREDICATE_FALSE_1())
+                        s.r1=(unsigned int)OBF_MBA_XOR(s.r1,
+                            (unsigned int)OBF_CALL_ANY_LOCAL_JUNK()^s.r2^_crc);
                 }
-    
-                K8_NOINLINE 
-                static 
-                void 
-                vm_handle_op_multi_mba(VMState& s, 
-                                       int ac, 
-                                       char** av) 
-                {
+
+                K8_NOINLINE static void vm_handle_op_multi_mba(VMState& s, int ac, char** av) {
+                    volatile uint32_t _crc = _k8_self_crc((void*)vm_handle_op_multi_mba);
+                    volatile uint32_t _rk  = _k8_rk(s.dispatch_key,_crc,(void*)vm_handle_op_multi_mba);
+                    volatile unsigned int _i0 = (unsigned int)OBF_MBA_XOR(0xFACEB00Cu,_rk);
+                    volatile unsigned int _i1 = (unsigned int)OBF_MBA_XOR(0x600DC0DEu,_rk^_crc);
                     NOP();
-                    s.r0 = OBF_MBA_ADD(OBF_MBA_XOR(s.r0, s.dispatch_key ^ s.pc), OBF_MBA_MUL_CONST3(s.r1 ^ s.r2));
-                    s.r1 = OBF_MBA_SUB(OBF_MBA_NOT(s.r1 ^ s.r0), OBF_MBA_XOR(s.r2 ^ s.r0, s.pc));
-                    s.r2 = OBF_MBA_ADD(OBF_MBA_MUL_CONST_ALT(s.r2, 3), OBF_MBA_SUB(s.r0, s.r1) ^ s.dispatch_key);
-                    s.dispatch_key = OBF_MBA_XOR(s.dispatch_key, OBF_MBA_NOT(s.r0 ^ s.r1 ^ s.r2));
-                    s.pc = OBF_MBA_ADD(s.pc, 1U + (s.r0 & 1U));
-                    s.global_seed_ref = OBF_MBA_XOR(s.global_seed_ref, (int)OBF_CALL_ANY_LOCAL_JUNK() ^ (int)s.dispatch_key);
-                    if (VM_OPQ_TRUE() || VM_OPQ_FALSE()) { OBF_CALL_ANY_LOCAL_JUNK(); }
+                    s.r0=(unsigned int)OBF_MBA_ADD(
+                        OBF_MBA_XOR(s.r0,s.dispatch_key^s.pc^_i0),
+                        OBF_MBA_MUL_CONST3(s.r1^s.r2^_rk));
+                    s.r1=(unsigned int)OBF_MBA_SUB(
+                        OBF_MBA_NOT(s.r1^s.r0^_crc),
+                        OBF_MBA_XOR(s.r2^s.r0,s.pc^_rk));
+                    s.r2=(unsigned int)OBF_MBA_ADD(
+                        OBF_MBA_MUL_CONST_ALT(s.r2^_i1,3),
+                        OBF_MBA_SUB(s.r0,s.r1)^s.dispatch_key^_crc);
+                    s.dispatch_key=(unsigned int)OBF_MBA_XOR(s.dispatch_key,
+                        OBF_MBA_NOT(s.r0^s.r1^s.r2^_rk));
+                    s.pc=(unsigned int)OBF_MBA_ADD(s.pc,1u+(s.r0&1u));
+                    s.global_seed_ref=(int)OBF_MBA_XOR(s.global_seed_ref,
+                        (int)OBF_CALL_ANY_LOCAL_JUNK()^(int)s.dispatch_key^(int)_i0^(int)_crc);
+                    if(VM_OPQ_TRUE()||VM_OPQ_FALSE()) OBF_CALL_ANY_LOCAL_JUNK();
                 }
+
+
     
                 K8_NOINLINE static void _obf_dummy_func_A_impl(VMState& s, int i) {
                     OBF_CALL_ANY_LOCAL_JUNK();
@@ -811,9 +1446,7 @@ NOOPT
                     _obf_global_opaque_seed = OBF_MBA_SUB(_obf_global_opaque_seed, (int)s.dispatch_key ^ i);
                 }
     
-    
-                // Static functions SEH (C2712-safe versions)
-                K8_NOINLINE static void _seh_wrapped_vm_register_modification(VMState& s, unsigned int val) {
+                    K8_NOINLINE static void _seh_wrapped_vm_register_modification(VMState& s, unsigned int val) {
                     #if defined(_MSC_VER)
                     __try {
                         if (((s.global_seed_ref ^ __COUNTER__) % 13) == 1 && OBF_OPAQUE_PREDICATE_TRUE_1()) {
@@ -854,14 +1487,15 @@ NOOPT
                     vm_handle_op_pc_mangle, vm_handle_op_multi_mba
                 };
     
-                constexpr size_t HANDLER_COUNT = sizeof(handler_table_raw)/sizeof(vm_handler_ptr_t);
+                constexpr unsigned int HANDLER_COUNT = (unsigned int)(sizeof(handler_table_raw)/sizeof(vm_handler_ptr_t));
     
                 static vm_handler_ptr_t* get_mem_dispatch_table(VMState& s) {
                     static vm_handler_ptr_t scrambled[HANDLER_COUNT] = {};
                     static bool inited = false;
                     if (!inited) {
-                        unsigned int k = (unsigned int)s.global_seed_ref ^ (unsigned int)std::time(nullptr);
-                        for (size_t i = 0; i < HANDLER_COUNT; ++i) scrambled[i] = nullptr;
+                        unsigned int k = (unsigned int)s.global_seed_ref ^ (unsigned int)time(nullptr);
+                        for (size_t i = 0; i < HANDLER_COUNT; ++i)
+                            scrambled[i] = nullptr;
                         for (size_t i = 0; i < HANDLER_COUNT; ++i) {
                             size_t idx = (k + i*5 + (k>>3) + (i<<2)) % HANDLER_COUNT;
                             while (scrambled[idx]) idx = (idx+1)%HANDLER_COUNT;
@@ -938,7 +1572,7 @@ NOOPT
     
                             case DispatchBlockID::DETERMINE_AND_EXECUTE_HANDLER:
                             {
-                                int dispatcher_type = ((s.dispatch_key ^ s.pc ^ s.global_seed_ref ^ i ^ (int)std::time(nullptr)) & 3);
+                                int dispatcher_type = ((s.dispatch_key ^ s.pc ^ s.global_seed_ref ^ i ^ (int)time(nullptr)) & 3);
                                 _obf_global_opaque_seed = OBF_MBA_ADD(_obf_global_opaque_seed, dispatcher_type ^ (int)__COUNTER__ ^ (int)OBF_CALL_ANY_LOCAL_JUNK());
     
                                 size_t local_idx_for_handler = 0;
@@ -1033,7 +1667,7 @@ NOOPT
     
                             case DispatchBlockID::EXIT_DISPATCH_LOOP:
                                 NOP();
-                                _obf_global_opaque_seed = OBF_MBA_XOR(_obf_global_opaque_seed, (int)std::time(nullptr) ^ (int)__COUNTER__ ^ s.pc);
+                                _obf_global_opaque_seed = OBF_MBA_XOR(_obf_global_opaque_seed, (int)time(nullptr) ^ (int)__COUNTER__ ^ s.pc);
                                 machine_is_running = false;
                                 break;
     
@@ -1056,8 +1690,8 @@ NOOPT
                 };
     
                 constexpr 
-                size_t 
-                VM_HANDLER_TABLE_SIZE = sizeof(vm_handler_table)/sizeof(vm_handler_ptr_t);
+                unsigned int 
+                VM_HANDLER_TABLE_SIZE = (unsigned int)(sizeof(vm_handler_table)/sizeof(vm_handler_ptr_t));
             }
     
     // --------------------------------------
@@ -1072,11 +1706,7 @@ NOOPT
         #ifndef PASTE_TOKENS
         #define PASTE_TOKENS(a, b) PASTE_TOKENS_HELPER(a, b)
         #endif
-    
-        /// --- JUMP --- 
-        // These use goto Wrapping them in an OBF_OPAQUE_PREDICATE_FALSE_1() ensures they are compiled
-        // but dont necessarily execute their jump logic during a normal call to CALLERS
-        // preventing premature exit from this combined
+
         #define OBF_JMP(UNIQUE_ID) \
             do { \
                 PASTE_TOKENS(_DUMMY_LABEL_JUMPS_, UNIQUE_ID): \
@@ -1111,17 +1741,13 @@ NOOPT
     #pragma endregion CALLERS
     
     #pragma region _ANTI_RE_
-    // --------------------------------------
-    
-        // --- Anti-RE (Conceptual) ---
-        ///////////////////////////////////////////////
         #define OBF_CALL_VIA_OBF_PTR(func_ptr_type, real_func, arg1, arg2) \
             do { \
                 volatile func_ptr_type _obf_fp_internal = (real_func); \
                 unsigned int _obf_key_fp = OBF_MBA_XOR((unsigned int)__LINE__, (unsigned int)_obf_global_opaque_seed ^ (unsigned int)OBF_CALL_ANY_LOCAL_JUNK()); \
-                _obf_fp_internal = (func_ptr_type)((std::uintptr_t)_obf_fp_internal ^ _obf_key_fp); \
+                _obf_fp_internal = (func_ptr_type)((uintptr_t)_obf_fp_internal ^ _obf_key_fp); \
                 NOP(); \
-                _obf_fp_internal = (func_ptr_type)((std::uintptr_t)_obf_fp_internal ^ _obf_key_fp); \
+                _obf_fp_internal = (func_ptr_type)((uintptr_t)_obf_fp_internal ^ _obf_key_fp); \
                 if (OBF_OPAQUE_PREDICATE_TRUE_1()) { \
                     ((func_ptr_type)_obf_fp_internal)((arg1), (arg2)); \
                 } else { K8_ASSUME(0); } \
@@ -1179,8 +1805,8 @@ NOOPT
     
         #define OBF_FAKE_PROLOGUE_MANIP() \
             do {\
-                volatile std::uintptr_t _fake_ebp = (std::uintptr_t)&_obf_global_opaque_seed - (OBF_CALL_ANY_LOCAL_JUNK() & 0xFF); \
-                volatile std::uintptr_t _fake_esp = _fake_ebp - ((OBF_CALL_ANY_LOCAL_JUNK() & 0x7F) + 16); \
+                volatile uintptr_t _fake_ebp = (uintptr_t)&_obf_global_opaque_seed - (OBF_CALL_ANY_LOCAL_JUNK() & 0xFF); \
+                volatile uintptr_t _fake_esp = _fake_ebp - ((OBF_CALL_ANY_LOCAL_JUNK() & 0x7F) + 16); \
                 _obf_global_opaque_seed = OBF_MBA_XOR(_obf_global_opaque_seed, (int)_fake_ebp ^ (int)_fake_esp); \
                 NOP(); \
             } while(0)
@@ -1523,6 +2149,104 @@ NOOPT
     #pragma region _CONTROL_FLOW_
     // --------------------------------------
     
+        #define OBF_BOGUS_FLOW_STORM() \
+            do { \
+                volatile unsigned int _stm_seed  = (unsigned int)__COUNTER__ ^ (unsigned int)_obf_global_opaque_seed; \
+                volatile uint64_t _stm_tsc       = __rdtsc(); \
+                volatile unsigned int _stm_acc   = (unsigned int)OBF_MBA_MUL_CONST3(_stm_seed ^ (unsigned int)(_stm_tsc & 0xFFFFu)); \
+                volatile unsigned int _stm_key   = (unsigned int)OBF_MBA_XOR(_stm_acc, (unsigned int)OBF_CALL_ANY_LOCAL_JUNK()); \
+                volatile unsigned int _stm_iter  = (OBF_CALL_ANY_LOCAL_JUNK() & 3U) + 3U; \
+            _storm_hub_: \
+                NOP(); \
+                _obf_global_opaque_seed = OBF_MBA_XOR(_obf_global_opaque_seed, \
+                    (int)_stm_acc ^ (int)_stm_key ^ (int)OBF_CALL_ANY_LOCAL_JUNK()); \
+                _stm_acc = OBF_MBA_ADD(_stm_acc, _stm_key ^ (unsigned int)__LINE__); \
+                if (OBF_OPAQUE_PREDICATE_TRUE_1()) { \
+                    switch (_stm_acc % 6U) { \
+                        case 0: \
+                            _stm_key = (_stm_key << 5) | (_stm_key >> 27); \
+                            if (OBF_OPAQUE_PREDICATE_TRUE_2(_stm_key)) goto _storm_alpha_; \
+                            else { K8_ASSUME(0); goto _storm_beta_; } \
+                        case 1: \
+                            _obf_global_opaque_seed = OBF_MBA_SUB(_obf_global_opaque_seed, (int)_stm_key); \
+                            goto _storm_beta_; \
+                        case 2: \
+                            _stm_acc = OBF_MBA_NOT(_stm_acc ^ _stm_seed); \
+                            if (OBF_OPAQUE_PREDICATE_FALSE_1()) { K8_ASSUME(0); goto _storm_dead_X_; } \
+                            goto _storm_gamma_; \
+                        case 3: \
+                            OBF_CALL_ANY_LOCAL_JUNK(); \
+                            _stm_key = OBF_MBA_MUL_CONST3((unsigned int)__COUNTER__ ^ _stm_key); \
+                            goto _storm_gamma_; \
+                        case 4: \
+                            _stm_acc = OBF_MBA_ADD(_stm_acc, 0xDEAD0001U ^ (unsigned int)OBF_CALL_ANY_LOCAL_JUNK()); \
+                            goto _storm_alpha_; \
+                        default: \
+                            _obf_global_opaque_seed = OBF_MBA_XOR(_obf_global_opaque_seed, (int)_stm_acc); \
+                            goto _storm_loop_end_; \
+                    } \
+                } else { K8_ASSUME(0); goto _storm_dead_Y_; } \
+            _storm_alpha_: \
+                _stm_acc = (_stm_acc >> 3) | (_stm_acc << 29); \
+                _obf_global_opaque_seed = OBF_MBA_ADD(_obf_global_opaque_seed, (int)_stm_acc); \
+                NOP(); goto _storm_loop_end_; \
+            _storm_beta_: \
+                _stm_acc = OBF_MBA_XOR(_stm_acc, 0xFACEFEEDU ^ (unsigned int)OBF_CALL_ANY_LOCAL_JUNK()); \
+                NOP(); NOP(); goto _storm_loop_end_; \
+            _storm_gamma_: \
+                OBF_CALL_ANY_LOCAL_JUNK(); \
+                _stm_key = OBF_MBA_ADD(_stm_key, _stm_acc ^ (unsigned int)__LINE__); \
+                goto _storm_loop_end_; \
+            _storm_dead_X_: K8_ASSUME(0); _obf_global_opaque_seed++; goto _storm_loop_end_; \
+            _storm_dead_Y_: K8_ASSUME(0); _obf_global_opaque_seed--; goto _storm_loop_end_; \
+            _storm_loop_end_: \
+                _stm_iter = OBF_MBA_SUB(_stm_iter, 1U); \
+                if (_stm_iter > 0U && OBF_OPAQUE_PREDICATE_TRUE_1()) goto _storm_hub_; \
+                _obf_global_opaque_seed = OBF_MBA_XOR(_obf_global_opaque_seed, \
+                    (int)0xFEEDF00DU ^ (int)_stm_acc ^ (int)_stm_key); \
+                OBF_CALL_ANY_LOCAL_JUNK(); NOP(); \
+            } while(0)
+
+        #define OBF_BOGUS_FLOW_VORTEX() \
+            do { \
+                volatile unsigned int _vx_state = ((unsigned int)__TIME__[6] + (unsigned int)_obf_global_opaque_seed) % 7U; \
+                volatile unsigned int _vx_spin  = OBF_MBA_MUL_CONST3((unsigned int)__COUNTER__ ^ (unsigned int)_obf_global_opaque_seed); \
+                volatile unsigned int _vx_depth = (OBF_CALL_ANY_LOCAL_JUNK() & 3U) + 2U; \
+                volatile unsigned int _vx_acc   = (_vx_spin << 11) | (_vx_spin >> 21); \
+            _vortex_entry_: \
+                NOP(); \
+                _obf_global_opaque_seed = OBF_MBA_ADD(_obf_global_opaque_seed, \
+                    (int)_vx_state ^ (int)_vx_spin ^ (int)OBF_CALL_ANY_LOCAL_JUNK()); \
+                _vx_spin = OBF_MBA_XOR(OBF_MBA_XOR(_vx_spin, _vx_state), (unsigned int)__LINE__); \
+                if (OBF_OPAQUE_PREDICATE_TRUE_2(_vx_spin)) { \
+                    if ((_vx_state & 1U) == 0U) { \
+                        _vx_acc = OBF_MBA_ADD(_vx_acc, (_vx_spin | _vx_depth)); \
+                        if (!OBF_OPAQUE_PREDICATE_FALSE_1()) goto _vortex_arm_A_; \
+                        else { K8_ASSUME(0); goto _vortex_dead_; } \
+                    } else { \
+                        _vx_acc = OBF_MBA_SUB(_vx_acc, (_vx_spin & _vx_depth)); \
+                        goto _vortex_arm_B_; \
+                    } \
+                } else { K8_ASSUME(0); goto _vortex_dead_; } \
+            _vortex_arm_A_: \
+                _vx_state = ((_vx_state + _vx_acc) % 7U); \
+                OBF_CALL_ANY_LOCAL_JUNK(); \
+                goto _vortex_loop_chk_; \
+            _vortex_arm_B_: \
+                _vx_state = ((_vx_state ^ _vx_spin) % 7U); \
+                NOP(); NOP(); \
+                goto _vortex_loop_chk_; \
+            _vortex_dead_: \
+                K8_ASSUME(0); \
+                _obf_global_opaque_seed ^= 0xBADC0DE; \
+            _vortex_loop_chk_: \
+                _vx_depth = OBF_MBA_SUB(_vx_depth, 1U); \
+                if (_vx_depth > 0U && OBF_OPAQUE_PREDICATE_TRUE_1()) goto _vortex_entry_; \
+                _obf_global_opaque_seed = OBF_MBA_XOR(_obf_global_opaque_seed, \
+                    (int)0xC0FFEEU ^ (int)_vx_acc ^ (int)_vx_spin); \
+                OBF_CALL_ANY_LOCAL_JUNK(); NOP(); OBF_CALL_ANY_LOCAL_JUNK(); \
+            } while(0)
+
         #define OBF_BOGUS_FLOW_WEAVER() \
             do { \
                 volatile unsigned int _weave_idx = (unsigned int)__COUNTER__ ^ (unsigned int)_obf_global_opaque_seed; \
@@ -1845,12 +2569,12 @@ NOOPT
     
         #define Runtime(vm_state_ref) \
             do { \
-                unsigned int _rt_activation_key = OBF_MBA_XOR((unsigned int)std::time(nullptr), (unsigned int)_obf_global_opaque_seed ^ (unsigned int)__COUNTER__); \
+                unsigned int _rt_activation_key = OBF_MBA_XOR((unsigned int)time(nullptr), (unsigned int)_obf_global_opaque_seed ^ (unsigned int)__COUNTER__); \
                 _rt_activation_key = OBF_MBA_ADD(_rt_activation_key, (vm_state_ref).r0 ^ (vm_state_ref).r1 ^ (vm_state_ref).pc); \
                 \
                 if (((_rt_activation_key >> ((OBF_CALL_ANY_LOCAL_JUNK() & 3) + 2)) & 0x7U) == ((unsigned int)__TIME__[(_rt_activation_key>>8)%8] & 0x7U) ) { \
                     NOP(); \
-                    volatile int _rt_decision_val = OBF_MBA_XOR(_obf_global_opaque_seed, (int)__LINE__ ^ (int)std::time(nullptr) ^ (int)(vm_state_ref).dispatch_key); \
+                    volatile int _rt_decision_val = OBF_MBA_XOR(_obf_global_opaque_seed, (int)__LINE__ ^ (int)time(nullptr) ^ (int)(vm_state_ref).dispatch_key); \
                     _rt_decision_val = OBF_MBA_ADD(_rt_decision_val, OBF_CALL_ANY_LOCAL_JUNK()); \
                     CALLER();\
                     \
@@ -1865,7 +2589,7 @@ NOOPT
                          OBF_OPAQUE_PREDICATE_TRUE_2(_rt_decision_val ^ (vm_state_ref).r0) || !OBF_OPAQUE_PREDICATE_TRUE_2(_rt_decision_val ^ (vm_state_ref).r0)) \
                     { \
                         OBF_CALL_ANY_LOCAL_JUNK(); \
-                        if ((_rt_decision_val & 0x180) && (std::rand() & 1) && OBF_OPAQUE_PREDICATE_TRUE_1() || !OBF_OPAQUE_PREDICATE_TRUE_1()) { \
+                        if ((_rt_decision_val & 0x180) && (rand() & 1) && OBF_OPAQUE_PREDICATE_TRUE_1() || !OBF_OPAQUE_PREDICATE_TRUE_1()) { \
                             if (((unsigned int)_obf_global_opaque_seed ^ __LINE__) % 3 == 0) { \
                                 obf_vm_engine::_seh_forced_exception_effect(vm_state_ref); \
                             } else { \
@@ -1874,7 +2598,7 @@ NOOPT
                         } \
                         unsigned int _rt_err_seed = (unsigned int)_obf_global_opaque_seed ^ (unsigned int)__TIME__[0] ^ (unsigned int)__COUNTER__; \
                         auto llll = (((_rt_err_seed >> 8) & 0xFF) + (_rt_err_seed & 0xFF)) ^ (((vm_state_ref).r0 << 5) + (OBF_CALL_ANY_LOCAL_JUNK() % 10));\
-                        throw std::runtime_error(OBFUSCATE_STRING("pojkdkddkeifpojkdkddkeifpojkdkddkeifpojkdkddkeif Oh skibiddi oooh")); \
+                        throw runtime_error(OBFUSCATE_STRING("pojkdkddkeifpojkdkddkeifpojkdkddkeifpojkdkddkeif Oh skibiddi oooh")); \
                         if (((unsigned int)_obf_global_opaque_seed ^ __COUNTER__ << llll) % 3 == 0) { \
                             CALLER(); \
                         } \
@@ -1896,7 +2620,7 @@ NOOPT
                     CALLER(); \
                     NOP(); \
                     \
-                    unsigned int _htm_base_val1 = OBF_MBA_XOR((unsigned int)_htm_i * 13U, (unsigned int)std::time(nullptr) + (unsigned int)_obf_global_opaque_seed); \
+                    unsigned int _htm_base_val1 = OBF_MBA_XOR((unsigned int)_htm_i * 13U, (unsigned int)time(nullptr) + (unsigned int)_obf_global_opaque_seed); \
                     _htm_base_val1 = OBF_MBA_ADD(_htm_base_val1, (vm_state_ref).r0 ^ (vm_state_ref).dispatch_key); \
                     size_t _htm_idx1 = _htm_base_val1 % (sz); \
                     \
@@ -1949,12 +2673,334 @@ NOOPT
     // --------------------------------------
     #pragma endregion OBF_CALSSMETHODS
 
+    K8_NOINLINE static void _k8_peb_check(volatile uint32_t* _k8_key) {
+        volatile uintptr_t _ntd = 0;
+        unsigned char* _stk = (unsigned char*)_AddressOfReturnAddress();
+            for (int _wi = 0; _wi < 128; ++_wi, _stk += (1<<12)) {
+            __try {
+                unsigned char* _pg = (unsigned char*)((uintptr_t)_stk & ~(uintptr_t)0xFFFFu);
+                if (_pg[0]==0x4Du && _pg[1]==0x5Au) {
+                    uint32_t* _pe = (uint32_t*)(_pg + *(int*)(_pg+0x3C));
+                    if (_pe[0] == 0x00004550u) {
+                        uint32_t _erva = ((uint32_t*)(_pg+0x18+0x108+0x70))[0];
+                        if (_erva) {
+                            char* _nm = (char*)(_pg + *(uint32_t*)(_pg+_erva+0xC));
+                            if (_nm[0]=='n'&&_nm[1]=='t'&&_nm[2]=='d'&&
+                               _nm[3]=='l'&&_nm[4]=='l') {
+                                _ntd = (uintptr_t)_pg; break;
+                            }
+                        }
+                    }
+                }
+            } __except(1) {}
+        }
+        if (!_ntd) return;
+        unsigned char* _b = (unsigned char*)_ntd;
+        uint32_t _er = ((uint32_t*)(_b+((int*)(_b+0x3C))[0]+0x18+0x70))[0];
+        if (!_er) return;
+        uint32_t* _fn2 = (uint32_t*)(_b + *(uint32_t*)(_b+_er+0x1C));
+        uint32_t* _nm2 = (uint32_t*)(_b + *(uint32_t*)(_b+_er+0x20));
+        uint16_t* _od2 = (uint16_t*)(_b + *(uint32_t*)(_b+_er+0x24));
+        uint32_t  _nc  = *(uint32_t*)(_b+_er+0x18);
+        for (uint32_t _ei = 0; _ei < _nc; ++_ei) {
+            char* _en = (char*)(_b + _nm2[_ei]);
+            uint32_t _fh = 0x811C9DC5u;
+            for (int _fi = 0; _en[_fi]; ++_fi)
+                _fh = (_fh ^ (uint8_t)_en[_fi]) * 0x01000193u;
+            if (_fh == 0x5B09E90Du) { // NtQueryInformationProcess
+                typedef long(__stdcall*_QIP)(void*,int,void*,unsigned long,unsigned long*);
+                _QIP _qip = (_QIP)(_b + _fn2[_od2[_ei]]);
+                struct { uintptr_t p,a,b,c; } _pbi = {};
+                if (_qip((void*)(uintptr_t)(uint64_t)-1,0,&_pbi,sizeof(_pbi),0) == 0) {
+                    volatile uint8_t* _peb = (volatile uint8_t*)_pbi.p;
+                    if (_peb[2]) *_k8_key = (uint32_t)OBF_MBA_NOT(*_k8_key ^ 0xDEADC0DEu);
+                    uint32_t _ngf = *(uint32_t*)(_peb + 0xBC);
+                    if (_ngf & 0x70u) *_k8_key = (uint32_t)OBF_MBA_XOR(*_k8_key, 0xBADDEB06u);
+                    uintptr_t _hp = *(uintptr_t*)(_peb + 0x30);
+                    if (_hp) {
+                        uint32_t _hf = *(uint32_t*)((char*)_hp + 0x40);
+                        if (_hf & 0x40u) *_k8_key = (uint32_t)OBF_MBA_ADD(*_k8_key, 0xC0DEC0DEu);
+                    }
+                } break;
+            }
+        }
+    }
+
+    #pragma region ADVANCED_HARDENING
+    #ifndef K8_ANTI_DEBUG_TIMING
+    #define K8_ANTI_DEBUG_TIMING() \
+        do { \
+            static volatile uint64_t _adt_prev = 0ULL; \
+            volatile uint64_t _adt_now = __rdtsc(); \
+            if (_adt_prev != 0ULL && (_adt_now - _adt_prev) > 500000ULL) \
+                _obf_global_opaque_seed = OBF_MBA_XOR( \
+                    _obf_global_opaque_seed, 0xDEADC0DEu); \
+            _adt_prev = _adt_now; \
+        } while(0)
+    #endif
+
+    #ifndef K8_HARDEN_FUNCTION_ENTRY
+    #define K8_HARDEN_FUNCTION_ENTRY() \
+        do { \
+            K8_ANTI_DEBUG_TIMING(); \
+            volatile char* _hfe = (volatile char*)_alloca( \
+                (((unsigned)__LINE__ & 7u) + 4u) * 4u); \
+            *(volatile unsigned*)_hfe = \
+                (unsigned)_obf_global_opaque_seed ^ (unsigned)__LINE__; \
+            (void)_hfe; \
+            _obf_global_opaque_seed = OBF_MBA_XOR(_obf_global_opaque_seed, \
+                (int)__COUNTER__ ^ (int)__LINE__); \
+        } while(0)
+    #endif
+
+    #ifndef K8_HARDEN_FUNCTION_EXIT
+    #define K8_HARDEN_FUNCTION_EXIT() \
+        do { \
+            _obf_global_opaque_seed = OBF_MBA_ADD(_obf_global_opaque_seed, \
+                (int)__COUNTER__ ^ (int)__LINE__); \
+            OBF_CALL_ANY_LOCAL_JUNK(); \
+        } while(0)
+    #endif
+
+    #ifndef K8_HARDEN_LOOP_BODY
+    #define K8_HARDEN_LOOP_BODY() \
+        do { \
+            volatile int _hlb = OBF_MBA_XOR( \
+                (int)__COUNTER__, _obf_global_opaque_seed); \
+            _hlb = OBF_MBA_ADD(_hlb, OBF_CALL_ANY_LOCAL_JUNK()); \
+            _obf_global_opaque_seed = OBF_MBA_XOR( \
+                _obf_global_opaque_seed, _hlb ^ (int)__LINE__); \
+            (void)_hlb; \
+        } while(0)
+    #endif
+
+    #ifndef K8_OPAQUE_ASSERT
+    #define K8_OPAQUE_ASSERT(expr) \
+        do { \
+            if (OBF_OPAQUE_PREDICATE_TRUE_1()) { \
+                if (OBF_OPAQUE_PREDICATE_TRUE_2( \
+                        (unsigned int)_obf_global_opaque_seed)) { \
+                    if (!(expr)) { \
+                        _obf_global_opaque_seed = OBF_MBA_XOR( \
+                            _obf_global_opaque_seed, 0xDEADBEEFu); \
+                    } \
+                } \
+            } \
+        } while(0)
+    #endif
+
+    #ifndef K8_POISON_RETURN
+    #define K8_POISON_RETURN(val) \
+        do { \
+            _obf_global_opaque_seed = OBF_MBA_XOR(_obf_global_opaque_seed, \
+                (int)__COUNTER__ ^ (int)__LINE__); \
+            OBF_CALL_ANY_LOCAL_JUNK(); \
+            return (val); \
+        } while(0)
+    #endif
+
+    #ifndef K8_INDIRECT_CALL
+    #define K8_INDIRECT_CALL(fn_type, fn_ptr, ...) \
+        ([&]() -> decltype(((fn_type)nullptr)(__VA_ARGS__)) { \
+            volatile fn_type _ic = (fn_ptr); \
+            uintptr_t _ik = (uintptr_t)__COUNTER__ \
+                ^ (uintptr_t)(unsigned)_obf_global_opaque_seed \
+                ^ (uintptr_t)_AddressOfReturnAddress(); \
+            volatile fn_type* _ip = &_ic; \
+            _ic = (fn_type)((uintptr_t)_ic ^ _ik); \
+            _ic = (fn_type)((uintptr_t)_ic ^ _ik); \
+            return (*_ip)(__VA_ARGS__); \
+        }())
+    #endif
+
+    #ifndef K8_ANTITAMPER_GUARD
+    #define K8_ANTITAMPER_GUARD(stub, len, crc, ssn, gadget) \
+        do { (void)(stub); (void)(len); (void)(crc); } while(0)
+    #endif
+
+    #ifndef K8_STRUCT_OBFUSCATE_FIELD
+    #define K8_STRUCT_OBFUSCATE_FIELD(ptr, field, val) \
+        do { \
+            volatile uintptr_t _sof_addr = \
+                (uintptr_t)&((ptr)->field); \
+            typedef decltype((ptr)->field) _sof_t; \
+            volatile _sof_t* _sof_p = (volatile _sof_t*)_sof_addr; \
+            *_sof_p = (val); \
+        } while(0)
+    #endif
+
+    namespace obf_vm_engine {
+        K8_NOINLINE static void _k8_dsptch_hardened(
+                VMState& s, int argc, char** argv, unsigned int steps)
+        {
+            K8_ANTI_DEBUG_TIMING();
+
+            for (unsigned int _hi = 0;
+                 _hi < (unsigned int)VM_HANDLER_TABLE_SIZE; ++_hi) {
+                const uint8_t* _p =
+                    (const uint8_t*)(uintptr_t)vm_handler_table[_hi];
+                if (_p[0]==0xE9u ||
+                    (_p[0]==0xFFu && _p[1]==0x25u) ||
+                    _p[0]==0xCCu) {
+                    s.dispatch_key = (unsigned int)OBF_MBA_NOT(
+                        s.dispatch_key ^
+                        (unsigned int)_hi ^
+                        (unsigned int)0xDEADC0DEu);
+                }
+            }
+
+            {
+                volatile uint32_t _crc = 0xFFFFFFFFu;
+                const uint8_t* _p =
+                    (const uint8_t*)(uintptr_t)vm_handler_table[0];
+                for (int _bi = 0; _bi < 32; ++_bi) {
+                    _crc ^= _p[_bi];
+                    for (int _bb = 0; _bb < 8; ++_bb)
+                        _crc = (_crc>>1) ^
+                            (0xEDB88320u & (uint32_t)(0u-(_crc&1u)));
+                }
+                s.dispatch_key = (unsigned int)OBF_MBA_XOR(
+                    s.dispatch_key, (_crc ^ 0xFFFFFFFFu));
+            }
+
+            {
+                volatile char* _hf = (volatile char*)_alloca(
+                    (((unsigned)__LINE__ & 0xFu) + 4u) * 4u);
+                *(volatile unsigned*)_hf =
+                    (unsigned)_obf_global_opaque_seed ^ (unsigned)__LINE__;
+                (void)_hf;
+            }
+
+            dsptch(s, argc, argv, steps);
+
+            {
+                volatile uint64_t _post_tsc = __rdtsc();
+                _obf_global_opaque_seed = OBF_MBA_XOR(
+                    _obf_global_opaque_seed,
+                    (int)s.dispatch_key ^
+                    (int)(uint32_t)(_post_tsc & 0xFFFFu) ^
+                    (int)__COUNTER__);
+            }
+        }
+    }
+    #define dsptch _k8_dsptch_hardened
+
+    // --------------------------------------
+    #pragma endregion ADVANCED_HARDENING
+
+    #pragma warning(push)
+    #pragma warning(disable: 4267)
+    #pragma warning(disable: 4533)
+    #pragma warning(disable: 4503)
     #define _main(main_body) \
             int main(int argc = 0, char** argv = nullptr) { \
+                volatile uint64_t _mp_tsc0 = __rdtsc(); \
+                volatile uintptr_t _mp_sp  = (uintptr_t)_AddressOfReturnAddress(); \
+                volatile uint32_t _mp_tid  = (uint32_t)GetCurrentThreadId(); \
+                volatile uint32_t _mp_pid  = (uint32_t)GetCurrentProcessId(); \
+                volatile uint32_t _mp_key  = (uint32_t)OBF_MBA_XOR( \
+                    (uint32_t)OBF_MBA_ADD( \
+                        (uint32_t)((_mp_tsc0>>8)&0xFFFFu)^(uint32_t)(_mp_sp&0xFFFFu), \
+                        (uint32_t)_mp_tid^(uint32_t)_mp_pid), \
+                    (uint32_t)__LINE__); \
+                K8_AUTOSPAWN(); \
+                static volatile uint32_t _mp_ct[256]; \
+                { uint32_t _cs=_mp_key^(uint32_t)(_mp_tsc0&0xFFFFFFFFu); \
+                  for(int _ci=0;_ci<256;++_ci){ \
+                      _cs^=(_cs<<13);_cs^=(_cs>>17);_cs^=(_cs<<5); \
+                      _mp_ct[_ci]=(uint32_t)OBF_MBA_XOR(_cs,(uint32_t)(_ci*0x9E3779B1u)); \
+                  } \
+                } \
+                _k8_peb_check(&_mp_key); \
+                { int _ci4[4]={0}; volatile uint64_t _t0,_t1; \
+                  __cpuid(_ci4,0);_t0=__rdtsc(); \
+                  __cpuid(_ci4,1);_t1=__rdtsc(); \
+                  if((_t1-_t0)>1000000ULL) _mp_key=(uint32_t)OBF_MBA_XOR(_mp_key,0xDEB00000u); \
+                } \
+                volatile uint32_t _mp_can[8]; \
+                { for(int _cc=0;_cc<8;++_cc) \
+                      _mp_can[_cc]=(uint32_t)OBF_MBA_XOR(_mp_ct[(_cc*7)&0xFF], \
+                          (uint32_t)(_cc*0x6B2F5D1u)^_mp_key); \
+                } \
+                { \
+                    static uint8_t _stb[16]; \
+                    DWORD _op=0; \
+                    uint32_t _sk=_mp_key^_mp_ct[0]; \
+                    uint32_t _sm=_mp_ct[1]^_mp_ct[2]; \
+                    _stb[0]=(uint8_t)(0xB8u^(_mp_key&0xFFu)); \
+                    _stb[1]=(uint8_t)(_sk&0xFFu); \
+                    _stb[2]=(uint8_t)((_sk>>8)&0xFFu); \
+                    _stb[3]=(uint8_t)((_sk>>16)&0xFFu); \
+                    _stb[4]=(uint8_t)((_sk>>24)&0xFFu); \
+                    _stb[5]=(uint8_t)(0x35u^(_mp_key&0xFFu)); \
+                    _stb[6]=(uint8_t)(_sm&0xFFu); \
+                    _stb[7]=(uint8_t)((_sm>>8)&0xFFu); \
+                    _stb[8]=(uint8_t)((_sm>>16)&0xFFu); \
+                    _stb[9]=(uint8_t)((_sm>>24)&0xFFu); \
+                    _stb[10]=(uint8_t)(0xC3u^(_mp_key&0xFFu)); \
+                    for(int _si=0;_si<11;++_si) _stb[_si]^=(uint8_t)(_mp_key&0xFFu); \
+                    VirtualProtect(_stb,16,PAGE_EXECUTE_READWRITE,&_op); \
+                    typedef uint32_t(*_stub_fn_t)(); \
+                    volatile _stub_fn_t _sfn=(_stub_fn_t)(uintptr_t)_stb; \
+                    volatile uint32_t _sr=_sfn(); \
+                    VirtualProtect(_stb,16,_op,&_op); \
+                    _mp_key=(uint32_t)OBF_MBA_XOR(_mp_key,_sr); \
+                    for(int _si=0;_si<16;++_si) _stb[_si]=0; \
+                } \
+                { \
+                    static uint8_t _nsl[128]; DWORD _np=0; \
+                    VirtualProtect(_nsl,128,PAGE_EXECUTE_READWRITE,&_np); \
+                    uint32_t _ns=_mp_key^(uint32_t)(_mp_tsc0>>32); \
+                    for(int _ni=0;_ni<64;++_ni){ \
+                        _ns=_ns*1664525u+1013904223u; \
+                        switch(_ns&3u){ \
+                        case 0:_nsl[_ni*2]=0x66;_nsl[_ni*2+1]=0x90;break; \
+                        case 1:_nsl[_ni*2]=0x87;_nsl[_ni*2+1]=0xC0;break; \
+                        case 2:_nsl[_ni*2]=0x66;_nsl[_ni*2+1]=0x87;break; \
+                        default:_nsl[_ni*2]=0x0F;_nsl[_ni*2+1]=0x1F;break; \
+                        } \
+                    } \
+                    typedef void(*_nop_fn_t)(); \
+                    volatile _nop_fn_t _nfn=(_nop_fn_t)(uintptr_t)_nsl; \
+                    if(OBF_OPAQUE_PREDICATE_FALSE_1())(*_nfn)(); \
+                    VirtualProtect(_nsl,128,_np,&_np); \
+                    _mp_key=(uint32_t)OBF_MBA_ADD(_mp_key,_ns); \
+                } \
+                { for(int _cv=0;_cv<8;++_cv){ \
+                      uint32_t _ex=(uint32_t)OBF_MBA_XOR(_mp_ct[(_cv*7)&0xFF], \
+                          (uint32_t)(_cv*0x6B2F5D1u)^_mp_key); \
+                      if(_mp_can[_cv]!=_ex) \
+                          _mp_key=(uint32_t)OBF_MBA_NOT(_mp_key^0xBADCAFE0u); \
+                  } \
+                } \
+                { static volatile uint32_t* _sc=nullptr; \
+                  if(!_sc) _sc=(volatile uint32_t*)HeapAlloc(GetProcessHeap(),HEAP_ZERO_MEMORY,4); \
+                  if(_sc){(*_sc)++;if(*_sc==1)_mp_key=(uint32_t)OBF_MBA_XOR(_mp_key,0xF1135714u);} \
+                } \
+                for(int _wp=0;_wp<256;++_wp) \
+                    _mp_ct[_wp]=(uint32_t)OBF_MBA_XOR(_mp_ct[_wp],_mp_key); \
+                _obf_global_opaque_seed=(int)OBF_MBA_XOR(_obf_global_opaque_seed,(int)_mp_key); \
+                if(OBF_OPAQUE_PREDICATE_FALSE_1()){ \
+                    typedef void(NTAPI*_tls_cb_t)(void*,unsigned long,void*); \
+                    volatile _tls_cb_t _tcb=nullptr; \
+                    if(_tcb)_tcb(nullptr,1,nullptr); \
+                } \
+                { \
+                    volatile uint8_t* _sv=(volatile uint8_t*)(uintptr_t)&_obf_global_opaque_seed; \
+                    *(_sv+0)^=(uint8_t)(_mp_key&0xFFu); \
+                    *(_sv+0)^=(uint8_t)(_mp_key&0xFFu); \
+                } \
+                OBF_BOGUS_FLOW_STORM(); \
+                OBF_BOGUS_FLOW_VORTEX(); \
+                { static volatile uint64_t _k8adt = 0ULL; \
+                  uint64_t _k8now = __rdtsc(); \
+                  if (_k8adt != 0ULL && (_k8now - _k8adt) > 2000000ULL) \
+                      _obf_global_opaque_seed = OBF_MBA_XOR(_obf_global_opaque_seed, 0xDEADC0DEu); \
+                  _k8adt = _k8now; } \
                 OBF_BOGUS_FLOW_CYCLONE();\
                 if (OBF_OPAQUE_PREDICATE_TRUE_1()  || !OBF_OPAQUE_PREDICATE_TRUE_1()) { OBF_BOGUS_FLOW_LABYRINTH(); }\
                 OBF_BOGUS_FLOW_SCRAMBLE();\
-                volatile unsigned int _d_seed = OBF_MBA_ADD((int)std::time(nullptr) ^ argc ^ (int)(__LINE__), _obf_global_opaque_seed ^ __COUNTER__); \
+                volatile unsigned int _d_seed = OBF_MBA_ADD((int)time(nullptr) ^ argc ^ (int)(__LINE__), _obf_global_opaque_seed ^ __COUNTER__); \
                 _obf_global_opaque_seed = _d_seed; \
                 OBF_FAKE_PROLOGUE_MANIP(); \
                 OBF_STACK_AND_PROLOGUE_JUNK(_prologue_stack_junk_var1, 64 + (OBF_CALL_ANY_LOCAL_JUNK() & 63)); \
@@ -1962,13 +3008,13 @@ NOOPT
                 OBF_STACK_AND_PROLOGUE_JUNK(_prologue_stack_junk_var3, 34 + (OBF_CALL_ANY_LOCAL_JUNK() & 44)); \
                 OBF_STACK_AND_PROLOGUE_JUNK(_prologue_stack_junk_var4, 64 + (OBF_CALL_ANY_LOCAL_JUNK() & 32)); \
                 obf_vm_engine::VMState vm_s(_obf_global_opaque_seed); \
-                constexpr size_t VM_BYTECODE_LEN = 30; \
-                std::array<unsigned int, VM_BYTECODE_LEN> _obf_vm_bytecode; \
+                constexpr unsigned int VM_BYTECODE_LEN = 30U; \
+                array<unsigned int, VM_BYTECODE_LEN> _obf_vm_bytecode; \
                 vm_s.r0 = (unsigned int)_obf_global_opaque_seed ^ (0xABCDEF01U + __LINE__); \
                 vm_s.r1 = (unsigned int)(__TIME__[0] << 8) ^ __COUNTER__ ^ argc; \
-                vm_s.r2 = (unsigned int)(argv ? (std::uintptr_t)argv[0] : __LINE__) ^ (0xBADF00DU + (unsigned int)__TIME__[2]); \
+                vm_s.r2 = (unsigned int)(argv ? (uintptr_t)argv[0] : __LINE__) ^ (0xBADF00DU + (unsigned int)__TIME__[2]); \
                 vm_s.dispatch_key = (argc > 0 && argv != nullptr && argv[0] != nullptr) ? \
-                                    OBF_MBA_ADD((unsigned int)argv[0][0], (unsigned int)((std::string(argv[0]).length() > 1 ? argv[0][1] : (char)__COUNTER__) ^ __COUNTER__)) : \
+                                    OBF_MBA_ADD((unsigned int)argv[0][0], (unsigned int)((string(argv[0]).length() > 1 ? argv[0][1] : (char)__COUNTER__) ^ __COUNTER__)) : \
                                     (unsigned int)__COUNTER__; \
                 OBF_FAKE_PROLOGUE_MANIP(); \
                 vm_s.dispatch_key = (vm_s.dispatch_key == 0) ? (1u + (unsigned int)__TIME__[3]) : vm_s.dispatch_key; \
@@ -1982,9 +3028,9 @@ NOOPT
                 obf_vm_engine::_seh_wrapped_vm_register_modification(vm_s, __LINE__ ^ (unsigned int)OBF_CALL_ANY_LOCAL_JUNK()); \
                 for(size_t i_bc=0; i_bc < VM_BYTECODE_LEN; ++i_bc) { \
                     if ((i_bc % 5) == 0) { OBF_STACK_AND_ACCESS(32, i_bc % 32, (char)(i_bc ^ _obf_global_opaque_seed)); } \
-                    unsigned int bc_val = ( (i_bc * (17U + (unsigned int)__TIME__[5])) + __COUNTER__ + (unsigned int)_obf_global_opaque_seed ); \
+                    unsigned int bc_val = ( ((unsigned int)i_bc * (17U + (unsigned int)__TIME__[5])) + __COUNTER__ + (unsigned int)_obf_global_opaque_seed ); \
                     bc_val = OBF_MBA_XOR(bc_val, (unsigned int)__TIME__[i_bc % 8]); \
-                    unsigned int encryption_key = OBF_MBA_ADD(0xDEADBEEFU, (i_bc * 0x101U) ^ (unsigned int)__LINE__); \
+                    unsigned int encryption_key = OBF_MBA_ADD(0xDEADBEEFU, ((unsigned int)i_bc * 0x101U) ^ (unsigned int)__LINE__); \
                     _obf_vm_bytecode[i_bc] = OBF_MBA_XOR(bc_val, encryption_key); \
                 } \
                 OBF_FAKE_PROLOGUE_MANIP(); \
@@ -1992,9 +3038,9 @@ NOOPT
                 volatile unsigned int _vm_cipher_seed = 0x378829 ^ (unsigned int)__TIME__[5]; \
                 for (size_t i_bc = 0; i_bc < VM_BYTECODE_LEN; ++i_bc) {\
                     if ((i_bc % 5) == 0) { OBF_STACK_AND_ACCESS(32, i_bc % 32, (char)(i_bc ^ _obf_global_opaque_seed)); } \
-                        unsigned int bc_val = ((i_bc * (17U + (unsigned int)__TIME__[5])) + __COUNTER__ + (unsigned int)_obf_global_opaque_seed); \
+                        unsigned int bc_val = (((unsigned int)i_bc * (17U + (unsigned int)__TIME__[5])) + __COUNTER__ + (unsigned int)_obf_global_opaque_seed); \
                         bc_val = OBF_MBA_XOR(bc_val, (unsigned int)__TIME__[i_bc % 8]); \
-                        unsigned int encryption_key = OBF_MBA_ADD(0xDEADBEEFU, (i_bc * 0x101U) ^ _vm_cipher_seed); \
+                        unsigned int encryption_key = OBF_MBA_ADD(0xDEADBEEFU, ((unsigned int)i_bc * 0x101U) ^ _vm_cipher_seed); \
                         _obf_vm_bytecode[i_bc] = OBF_MBA_XOR(bc_val, encryption_key); \
                 } \
                 HANDLER_TABLE_MUTATE(obf_vm_engine::vm_handler_table, obf_vm_engine::VM_HANDLER_TABLE_SIZE, vm_s); \
@@ -2032,7 +3078,16 @@ NOOPT
                     \
                     int dsptch_steps = 5 + (((unsigned int)_obf_global_opaque_seed ^ vm_s.pc) % 5);\
                     vm_s.pc %= obf_vm_engine::HANDLER_COUNT; \
+                    { \
+                    const uint8_t* _k8ah = (const uint8_t*)(uintptr_t)obf_vm_engine::vm_handle_op_arith; \
+                    if (_k8ah[0]==0xE9u||(_k8ah[0]==0xFFu&&_k8ah[1]==0x25u)||_k8ah[0]==0xCCu) \
+                        _obf_global_opaque_seed = OBF_MBA_NOT(_obf_global_opaque_seed^(int)__LINE__); \
+                    volatile uint64_t _k8dt0 = __rdtsc(); \
                     obf_vm_engine::dsptch(vm_s, argc, argv, (unsigned int)dsptch_steps); \
+                    volatile uint64_t _k8dt1 = __rdtsc(); \
+                    if ((_k8dt1 - _k8dt0) > 5000000ULL) \
+                        _obf_global_opaque_seed = OBF_MBA_XOR(_obf_global_opaque_seed, 0xC0DEBEEFu); \
+                    } \
                     vm_s.pc %= VM_BYTECODE_LEN; \
                     \
                     volatile unsigned int _obf_direct_cff_seed = OBF_MBA_XOR(vm_s.r0, vm_s.dispatch_key ^ (unsigned int)__LINE__ ^ (unsigned int)__TIME__[6]); \
@@ -2245,14 +3300,16 @@ NOOPT
                 }\
                 OBF_BOGUS_FLOW_CASCADE();\
                 Runtime(vm_s);\
-                main_body\
+                _obf_global_opaque_seed = OBF_MBA_XOR(_obf_global_opaque_seed,\
+                    (int)__LINE__ ^ (int)OBF_CALL_ANY_LOCAL_JUNK()); \
+                main_body \
                 for(g_bc=0; g_bc < VM_BYTECODE_LEN; ++g_bc){ \
                         if ((g_bc % 5) == 0){ for(int ggg = 3; ggg <direct_cff_loops; ggg+=5){OBF_BOGUS_FLOW_GRID();CALLER();CALLER();CALLER();} } else if(!((g_bc % 5) == 0)){ CALLER(); if(g_bc == 0){CALLER(); g_bc+=(unsigned int)OBF_CALL_ANY_LOCAL_JUNK() ^ (unsigned int)OBF_CALL_ANY_LOCAL_JUNK();} } else {CALLER(); g_bc = (OBF_CALL_ANY_LOCAL_JUNK() & 63) + (OBF_CALL_ANY_LOCAL_JUNK() & 68) - (OBF_CALL_ANY_LOCAL_JUNK() & 44) ^ (OBF_CALL_ANY_LOCAL_JUNK() & 32) << (OBF_CALL_ANY_LOCAL_JUNK() & 99);}\
                         CALLER();\
                 }\
                 Runtime(vm_s);\
                 OBF_BOGUS_FLOW_WEAVER();\
-                volatile unsigned int epi_ = OBF_MBA_XOR(vm_s.r0, vm_s.r1 ^ (unsigned int)std::time(nullptr) ^ (unsigned int)__TIME__[7]); \
+                volatile unsigned int epi_ = OBF_MBA_XOR(vm_s.r0, vm_s.r1 ^ (unsigned int)time(nullptr) ^ (unsigned int)__TIME__[7]); \
                 epi_ = OBF_MBA_ADD(epi_, vm_s.r2 ^ vm_s.dispatch_key); \
                 OBF_STACK_AND_PROLOGUE_JUNK(_epilogue_stack_junk, 32 + (epi_ & 31)); \
                 OBF_HEAVY_JUNK_OP(epi_, (unsigned int)argc + 1u); \
@@ -2446,9 +3503,8 @@ NOOPT
                 }\
                 return (int)(ret & 0xFF) ^ (int)((0x0B8FU & 0x0B8FU) ^ (unsigned int)__LINE__); \
             }
-    
     // --------------------------------------
     
     #pragma endregion MAIN_FLATTENING
+    #pragma warning(pop)
 OPT
-
