@@ -6,7 +6,7 @@ using namespace std;
 
 NOOPT
 
-constexpr uint32_t _obf_date_hash() {
+static constexpr uint32_t _obf_date_hash() {
     const char* s = __DATE__;
     uint32_t h = 0x811C9DC5;
     while (*s) { h = (h ^ (uint8_t)*s) * 0x01000193; ++s; }
