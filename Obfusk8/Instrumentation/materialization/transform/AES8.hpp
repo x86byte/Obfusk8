@@ -389,10 +389,10 @@ constexpr uint32_t _obf_date_hash() {
         #define CONCAT2(a,b) a##b
         #define CONCAT(a,b) CONCAT2(a,b)
 
-        #define _INTERNAL_OBF(str) \
+        #define _INTERNAL_OBF(str, char_type) \
                 ([]() { \
                     struct _OD { \
-                        using _CharT = remove_cv_t<remove_reference_t<decltype(str[0])>>; \
+                        using _CharT = char_type; \
                         static constexpr size_t _RAW_SIZE() { return sizeof(str); } \
                         static constexpr size_t _NUM_CHUNKS() { return (_RAW_SIZE() + 15) / 16; } \
                         static constexpr size_t _N_CHARS() { return _RAW_SIZE() / sizeof(_CharT); } \
@@ -434,8 +434,8 @@ constexpr uint32_t _obf_date_hash() {
                         runtime_key, _ks); \
                 })()
 
-        #define OBFUSCATE_STRING(str) _INTERNAL_OBF(str)
-        #define OBFUSCATE_WSTRING(str) _INTERNAL_OBF(str)
+        #define OBFUSCATE_STRING(str) _INTERNAL_OBF(str, char)
+        #define OBFUSCATE_WSTRING(str) _INTERNAL_OBF(str, wchar_t)
 
         #pragma region SHARED_RUNTIME_DECRYPT
             NOOPT
